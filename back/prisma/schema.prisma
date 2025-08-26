@@ -1,0 +1,222 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ad_constraint {
+  art_direction_id     String            @db.Uuid
+  constraint_option_id String            @db.Uuid
+  created_at           DateTime          @default(now()) @db.Timestamptz(6)
+  art_direction        art_direction     @relation(fields: [art_direction_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_adconst_ad")
+  constraint_option    constraint_option @relation(fields: [constraint_option_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_adconst_opt")
+
+  @@id([art_direction_id, constraint_option_id])
+  @@index([art_direction_id], map: "idx_adconst_ad")
+  @@index([constraint_option_id], map: "idx_adconst_option")
+}
+
+model ad_place {
+  id               String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  art_direction_id String        @db.Uuid
+  name             String
+  address          String?
+  lat              Decimal?      @db.Decimal(9, 6)
+  lng              Decimal?      @db.Decimal(9, 6)
+  maps_url         String?
+  created_at       DateTime      @default(now()) @db.Timestamptz(6)
+  art_direction    art_direction @relation(fields: [art_direction_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_place_ad")
+
+  @@index([art_direction_id], map: "idx_place_ad")
+}
+
+model ad_style {
+  art_direction_id String        @db.Uuid
+  style_id         String        @db.Uuid
+  created_at       DateTime      @default(now()) @db.Timestamptz(6)
+  art_direction    art_direction @relation(fields: [art_direction_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_adstyle_ad")
+  style            style         @relation(fields: [style_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_adstyle_style")
+
+  @@id([art_direction_id, style_id])
+  @@index([art_direction_id], map: "idx_adstyle_ad")
+  @@index([style_id], map: "idx_adstyle_style")
+}
+
+model art_direction {
+  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id           String              @db.Uuid
+  title             String              @db.VarChar(120)
+  brief             String
+  use_gear          Boolean             @default(false)
+  status            ad_status           @default(draft)
+  created_at        DateTime            @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime            @default(now()) @db.Timestamptz(6)
+  ad_constraint     ad_constraint[]
+  ad_place          ad_place[]
+  ad_style          ad_style[]
+  user              user                @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_ad_user")
+  favorite          favorite[]
+  generation_job    generation_job[]
+  picture_generated picture_generated[]
+
+  @@index([user_id], map: "idx_ad_user")
+}
+
+model constraint_option {
+  id                 String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  constraint_type_id String          @db.Uuid
+  code               String          @db.VarChar(120)
+  label              String          @db.VarChar(120)
+  is_active          Boolean         @default(true)
+  sort_order         Int             @default(0)
+  created_at         DateTime        @default(now()) @db.Timestamptz(6)
+  ad_constraint      ad_constraint[]
+  constraint_type    constraint_type @relation(fields: [constraint_type_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_copt_ctype")
+
+  @@unique([constraint_type_id, code], map: "uq_copt")
+}
+
+model constraint_type {
+  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code              String              @unique @db.VarChar(120)
+  label             String              @db.VarChar(120)
+  is_active         Boolean             @default(true)
+  sort_order        Int                 @default(0)
+  created_at        DateTime            @default(now()) @db.Timestamptz(6)
+  constraint_option constraint_option[]
+}
+
+model favorite {
+  user_id          String        @db.Uuid
+  art_direction_id String        @db.Uuid
+  created_at       DateTime      @default(now()) @db.Timestamptz(6)
+  art_direction    art_direction @relation(fields: [art_direction_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_fav_ad")
+  user             user          @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_fav_user")
+
+  @@id([user_id, art_direction_id])
+  @@index([art_direction_id], map: "idx_fav_ad")
+  @@index([user_id], map: "idx_fav_user")
+}
+
+model gear {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String    @db.Uuid
+  type       gear_type
+  brand      String
+  model      String
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+  user       user      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_gear_user")
+
+  @@index([user_id], map: "idx_gear_user")
+}
+
+model generation_job {
+  id               String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id          String        @db.Uuid
+  art_direction_id String        @db.Uuid
+  model            String        @db.VarChar(60)
+  duration         Int?
+  params           Json?
+  message          String?
+  status           job_status    @default(queued)
+  started_at       DateTime?     @db.Timestamptz(6)
+  finished_at      DateTime?     @db.Timestamptz(6)
+  art_direction    art_direction @relation(fields: [art_direction_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_job_ad")
+  user             user          @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_job_user")
+
+  @@index([art_direction_id], map: "idx_job_ad")
+  @@index([user_id], map: "idx_job_user")
+}
+
+model picture_generated {
+  id               String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  art_direction_id String        @db.Uuid
+  url              String
+  format           String?       @db.VarChar(20)
+  created_at       DateTime      @default(now()) @db.Timestamptz(6)
+  art_direction    art_direction @relation(fields: [art_direction_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_pic_ad")
+
+  @@index([art_direction_id], map: "idx_pic_ad")
+}
+
+model style {
+  id       String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  libelle  String     @unique
+  ad_style ad_style[]
+}
+
+model support_ticket {
+  id         String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String          @db.Uuid
+  subject    String          @db.VarChar(120)
+  category   ticket_category
+  priority   ticket_priority
+  message    String
+  status     ticket_status   @default(open)
+  created_at DateTime        @default(now()) @db.Timestamptz(6)
+  updated_at DateTime        @default(now()) @db.Timestamptz(6)
+  closed_at  DateTime?       @db.Timestamptz(6)
+  user       user            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_ticket_user")
+}
+
+model user {
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email          String           @unique @db.VarChar(320)
+  password_hash  String
+  username       String           @unique @db.VarChar(50)
+  verified_at    DateTime?        @db.Timestamptz(6)
+  created_at     DateTime         @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime         @default(now()) @db.Timestamptz(6)
+  art_direction  art_direction[]
+  favorite       favorite[]
+  gear           gear[]
+  generation_job generation_job[]
+  support_ticket support_ticket[]
+}
+
+enum ad_status {
+  draft
+  pending
+  ready
+  archived
+}
+
+enum gear_type {
+  camera
+  lens
+  flash
+  accessory
+}
+
+enum job_status {
+  queued
+  running
+  succeeded
+  failed
+  cancelled
+}
+
+enum ticket_category {
+  bug
+  billing
+  question
+  other
+}
+
+enum ticket_priority {
+  low
+  medium
+  high
+  urgent
+}
+
+enum ticket_status {
+  open
+  in_progress
+  resolved
+  closed
+}
