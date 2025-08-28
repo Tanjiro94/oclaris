@@ -1,0 +1,65 @@
+name: CI
+
+on:
+    pull_request:
+        branches: [main, staging]
+    push:
+        branches: [staging]
+
+jobs:
+    build-test:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                app: [front, back]
+        defaults:
+            run:
+                working-directory: ${{ matrix.app }}
+        services:
+            postgres:
+                image: postgres:16-alpine
+                env:
+                    POSTGRES_DB: oclaris
+                    POSTGRES_USER: postgres
+                    POSTGRES_PASSWORD: postgres
+                ports:
+                    - 55432:5432
+                options: >-
+                    --health-cmd "pg_isready -U postgres"
+                    --health-interval 3s
+                    --health-timeout 3s
+                    --health-retries 20
+            redis:
+                image: redis:7-alpine
+                ports:
+                    - 6379:6379
+        env:
+            DATABASE_URL: ${{secrets.DATABASE_URL}} 
+            REDIS_URL: ${{secrets.REDIS_URL}} 
+            JWT_SECRET: ${{secrets.JWT_SECRET}}
+            VITE_API_URL: ${{secrets.VITE_API_URL}}
+        steps:
+            -   uses: actions/checkout@v4
+            
+            -   uses: actions/setup-node@v4
+                with:
+                    node-version: "20"
+                    cache: "npm"
+            - run: npm ci
+
+            -   name: Wait for Postgres
+                if: matrix.app == 'back'
+                run: |
+                    for i in {1..40}; do
+                        nc -z 127.0.0.1 55432 && exit 0
+                        sleep 1
+                    done
+                    echo "Postgres not ready" && exit 1
+
+            - run: npm run ci:prep -w ${{matrix.app}}
+            - run: npm run lint -w ${{matrix.app}}
+            - run: npm run test -w ${{matrix.app}} --if-present
+            - run: npm run build -w ${{matrix.app}}
+            
+            
+                

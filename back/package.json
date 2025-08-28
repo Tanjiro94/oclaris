@@ -9,7 +9,10 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "studio": "prisma studio",
-    "migrate": "prisma migrate dev"
+    "migrate": "prisma migrate dev",
+    "ci:prep": "if [ -f prisma/schema.prisma ]; then npx prisma generate; else echo 'no prisma schema'; fi",
+    "lint": "echo \"no lint yet\"",
+    "test": "echo \"no tests yet\""
   },
   "keywords": [],
   "author": "",
@@ -33,6 +36,9 @@
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.41.0",
+    "@typescript-eslint/parser": "^8.41.0",
+    "eslint": "^9.34.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.2"
   }
