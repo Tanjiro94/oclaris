@@ -56,9 +56,9 @@ jobs:
                     done
                     echo "Postgres not ready" && exit 1
 
-            - run: npm run ci:prep -w ${{matrix.app}}
-            - run: npm run lint -w ${{matrix.app}}
-            - run: npm run test -w ${{matrix.app}} --if-present
-            - run: npm run build -w ${{matrix.app}}
+            - run: npm --prefix ${{matrix.app}} run ci:prep
+            - run: npm --prefix ${{matrix.app}} run lint
+            - run: npm --prefix ${{matrix.app}} run test --if-present
+            - run: npm --prefix ${{matrix.app}} run build --if-present
             
                 
