@@ -1,64 +1,79 @@
 name: CI
 
 on:
-    pull_request:
-        branches: [main, staging]
-    push:
-        branches: [staging]
+  pull_request:
+    branches: [main, staging]
+  push:
+    branches: [staging]
 
 jobs:
-    build-test:
-        runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                app: [front, back]
-        services:
-            postgres:
-                image: postgres:16-alpine
-                env:
-                    POSTGRES_DB: oclaris
-                    POSTGRES_USER: postgres
-                    POSTGRES_PASSWORD: postgres
-                ports:
-                    - 55432:5432
-                options: >-
-                    --health-cmd "pg_isready -U postgres"
-                    --health-interval 3s
-                    --health-timeout 3s
-                    --health-retries 20
-            redis:
-                image: redis:7-alpine
-                ports:
-                    - 6379:6379
+  build-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [front, back]
+
+    services:
+      postgres:
+        image: postgres:16-alpine
         env:
-            NPM_CONFIG_PRODUCTION: "false"
-            DATABASE_URL: ${{secrets.DATABASE_URL}} 
-            REDIS_URL: ${{secrets.REDIS_URL}} 
-            JWT_SECRET: ${{secrets.JWT_SECRET}}
-            VITE_API_URL: ${{secrets.VITE_API_URL}}
-        steps:
-            -   uses: actions/checkout@v4
-            
-            -   uses: actions/setup-node@v4
-                with:
-                    node-version: "20"
-                    cache: "npm"
-            -   name: Install deps at root
-                run: npm ci --include=dev
-                working-directory: .
+          POSTGRES_DB: oclaris
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 20
 
-            -   name: Wait for Postgres
-                if: matrix.app == 'back'
-                run: |
-                    for i in {1..40}; do
-                        nc -z 127.0.0.1 55432 && exit 0
-                        sleep 1
-                    done
-                    echo "Postgres not ready" && exit 1
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
 
-            - run: npm --prefix ${{matrix.app}} run ci:prep
-            - run: npm --prefix ${{matrix.app}} run lint
-            - run: npm --prefix ${{matrix.app}} run test --if-present
-            - run: npm --prefix ${{matrix.app}} run build --if-present
-            
-                
+    env:
+      NPM_CONFIG_PRODUCTION: "false"
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      REDIS_URL:   ${{ secrets.REDIS_URL }}
+      JWT_SECRET:  ${{ secrets.JWT_SECRET }}
+      VITE_API_URL: ${{ secrets.VITE_API_URL }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      # Installe toutes les deps des workspaces au root et ignore Husky en CI
+      - name: Install deps at root
+        run: HUSKY=0 npm ci --include=dev
+        working-directory: .
+
+      # Attendre Postgres uniquement pour le back
+      - name: Wait for Postgres (back only)
+        if: matrix.app == 'back'
+        run: |
+          for i in {1..40}; do
+            nc -z 127.0.0.1 55432 && exit 0
+            sleep 1
+          done
+          echo "Postgres not ready" && exit 1
+        working-directory: .
+
+      # ci:prep uniquement pour le back (front n'a pas ce script)
+      - name: ci:prep (back only)
+        if: matrix.app == 'back'
+        run: npm --prefix ./back run ci:prep
+        working-directory: .
+
+      # Lint / Test / Build pour chaque app, via --prefix et en partant du root
+      - run: npm --prefix ./${{ matrix.app }} run lint --if-present
+        working-directory: .
+      - run: npm --prefix ./${{ matrix.app }} run test --if-present
+        working-directory: .
+      - run: npm --prefix ./${{ matrix.app }} run build --if-present
+        working-directory: .
