@@ -11,7 +11,7 @@
     "dev": "npm-run-all -p dev:front dev:back",
     "build:front": "npm run build -w front",
     "build:back": "npm run build -w back",
-    "prepare": "husky"
+    "prepare": "command -v husky >/dev/null 2>&1 && husky || echo \"skip husky\""
   },
   "devDependencies": {
     "@commitlint/cli": "^19.6.0",
