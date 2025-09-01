@@ -2,6 +2,6 @@
   "front/**/*.{ts,tsx,js,jsx,vue}": [
     "bash -lc 'cd front && npm run lint:fix --silent'"
   ],
-  "back/**/*.{ts,js}": ["bash -lc 'cd back && npm run lint:fix --silent'"],
+  "back/src/**/*.{ts,js}": ["bash -lc 'cd back && npm run lint:fix --silent'"],
   "*.{json,md,css}": ["prettier --write"]
 }
