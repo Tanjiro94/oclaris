@@ -15,9 +15,6 @@ export default [
         ecmaVersion: "latest",
         sourceType: "module",
         globals: globals.node,
-
-        parser: tseslint.parser,
-        parserOptions: { project: true, tsconfigRootDir: import.meta.dirname }
     },
     rules: {}
     }
