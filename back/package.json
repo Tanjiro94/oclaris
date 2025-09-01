@@ -11,7 +11,8 @@
     "studio": "prisma studio",
     "migrate": "prisma migrate dev",
     "ci:prep": "if [ -f prisma/schema.prisma ]; then npx prisma generate; else echo 'no prisma schema'; fi",
-    "lint": "echo \"no lint yet\"",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test": "echo \"no tests yet\""
   },
   "keywords": [],

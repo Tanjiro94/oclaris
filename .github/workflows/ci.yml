@@ -11,11 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        include:
-          - app: front
-            path: front/front
-          - app: back
-            path: back
+        app: [front, back]
 
     services:
       postgres:
@@ -25,142 +21,55 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         ports:
-          - 5432:5432
+          - 55432:5432
         options: >-
           --health-cmd "pg_isready -U postgres"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 20
 
       redis:
         image: redis:7-alpine
         ports:
           - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     env:
-      # Base de données pour les tests
-      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/oclaris"
-      REDIS_URL: "redis://localhost:6379"
-      JWT_SECRET: "test-jwt-secret-key"
-      VITE_API_URL: "http://localhost:3000"
+      NPM_CONFIG_PRODUCTION: "false"
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      REDIS_URL:   ${{ secrets.REDIS_URL }}
+      JWT_SECRET:  ${{ secrets.JWT_SECRET }}
+      VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-
-      - name: Verify project structure
-        run: |
-          echo "=== Project structure ==="
-          find . -name "package.json" -type f
-          echo "=== Current matrix ==="
-          echo "App: ${{ matrix.app }}"
-          echo "Path: ${{ matrix.path }}"
-          ls -la ${{ matrix.path }}/
-
-      - name: Install root dependencies
-        run: |
-          echo "Installing root dependencies..."
-          HUSKY=0 npm ci --include=dev
-        env:
-          NPM_CONFIG_PRODUCTION: false
-
-      - name: Install workspace dependencies
-        run: |
-          echo "Installing dependencies for ${{ matrix.app }}..."
-          npm ci --include=dev
-        working-directory: ${{ matrix.path }}
-
-      - name: Wait for services (backend only)
-        if: matrix.app == 'back'
-        run: |
-          echo "Waiting for PostgreSQL..."
-          for i in {1..30}; do
-            if nc -z localhost 5432; then
-              echo "PostgreSQL is ready!"
-              break
-            fi
-            echo "Waiting for PostgreSQL... ($i/30)"
-            sleep 2
-          done
-          
-          echo "Waiting for Redis..."
-          for i in {1..30}; do
-            if nc -z localhost 6379; then
-              echo "Redis is ready!"
-              break
-            fi
-            echo "Waiting for Redis... ($i/30)"
-            sleep 2
-          done
-
-      - name: Setup Prisma (backend only)
-        if: matrix.app == 'back'
-        run: |
-          echo "Setting up Prisma..."
-          if [ -f prisma/schema.prisma ]; then
-            npx prisma generate
-            npx prisma db push --force-reset
-            echo "Prisma setup complete"
-          else
-            echo "No Prisma schema found"
-          fi
-        working-directory: ${{ matrix.path }}
-
-      - name: Run linting
-        run: |
-          echo "Running linting for ${{ matrix.app }}..."
-          npm run lint --if-present
-        working-directory: ${{ matrix.path }}
-
-      - name: Run tests
-        run: |
-          echo "Running tests for ${{ matrix.app }}..."
-          npm run test --if-present
-        working-directory: ${{ matrix.path }}
-
-      - name: Build application
-        run: |
-          echo "Building ${{ matrix.app }}..."
-          npm run build
-        working-directory: ${{ matrix.path }}
-
-      - name: Verify build output
-        run: |
-          echo "=== Build verification ==="
-          if [ "${{ matrix.app }}" = "front" ]; then
-            ls -la dist/ || echo "No dist folder found"
-          elif [ "${{ matrix.app }}" = "back" ]; then
-            ls -la dist/ || echo "No dist folder found"
-          fi
-        working-directory: ${{ matrix.path }}
-
-  # Job séparé pour vérifier le monorepo
-  workspace-check:
-    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
-      
-      - name: Install root dependencies
+
+      - name: Install deps at root
         run: HUSKY=0 npm ci --include=dev
-      
-      - name: Check workspace integrity
+        working-directory: .
+
+      - name: Wait for Postgres (back only)
+        if: matrix.app == 'back'
         run: |
-          echo "=== Workspace verification ==="
-          npm run build:front --if-present
-          npm run build:back --if-present
+          for i in {1..40}; do
+            nc -z 127.0.0.1 55432 && exit 0
+            sleep 1
+          done
+          echo "Postgres not ready" && exit 1
+        working-directory: .
+
+      - name: ci:prep (back only)
+        if: matrix.app == 'back'
+        run: npm --prefix ./back run ci:prep
+        working-directory: .
+
+      - run: npm --prefix ./${{ matrix.app }} run lint --if-present
+        working-directory: .
+      - run: npm --prefix ./${{ matrix.app }} run test --if-present
+        working-directory: .
+      - run: npm --prefix ./${{ matrix.app }} run build --if-present
+        working-directory: .
