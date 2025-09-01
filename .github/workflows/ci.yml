@@ -58,16 +58,18 @@ jobs:
             front/package-lock.json
             back/package-lock.json
 
+      # ------- Install -------
       - name: Install deps (back)
         if: ${{ matrix.app == 'back' }}
         working-directory: back
-        run: npm ci
+        run: npm ci --workspaces=false
 
       - name: Install deps (front)
         if: ${{ matrix.app == 'front' }}
         working-directory: front
-        run: npm ci
+        run: npm ci --workspaces=false
 
+      # ------- DB readiness -------
       - name: Wait for Postgres (back only)
         if: ${{ matrix.app == 'back' }}
         run: |
@@ -77,6 +79,7 @@ jobs:
           done
           echo "Postgres not ready" && exit 1
 
+      # ------- Prisma prep / migrations -------
       - name: ci:prep (back only)
         if: ${{ matrix.app == 'back' }}
         env:
@@ -85,6 +88,7 @@ jobs:
           REDIS_URL:  ${{ secrets.REDIS_URL }}
         run: npm --prefix ./back run ci:prep
 
+      # ------- Lint / Test / Build -------
       - name: Lint
         run: npm --prefix ./${{ matrix.app }} run lint --if-present
 

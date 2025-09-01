@@ -1,10 +1,6 @@
 {
   "name": "oclaris",
   "private": true,
-  "workspaces": [
-    "front",
-    "back"
-  ],
   "scripts": {
     "dev:front": "npm run dev -w front",
     "dev:back": "npm run dev -w back",
