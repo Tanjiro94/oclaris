@@ -1,0 +1,103 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, staging]
+  push:
+    branches: [staging]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        app: [front, back]
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: oclaris
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d oclaris"
+          --health-interval=3s
+          --health-timeout=3s
+          --health-retries=20
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping || exit 1"
+          --health-interval=3s
+          --health-timeout=3s
+          --health-retries=20
+
+    env:
+      NPM_CONFIG_PRODUCTION: "false"
+      VITE_API_URL: ${{ secrets.VITE_API_URL }}
+      JWT_SECRET:  ${{ secrets.JWT_SECRET }}
+      REDIS_URL:   ${{ secrets.REDIS_URL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: |
+            front/package-lock.json
+            back/package-lock.json
+
+      # ------- Install -------
+      - name: Install deps (back)
+        if: ${{ matrix.app == 'back' }}
+        working-directory: back
+        run: npm ci --workspaces=false
+
+      - name: Install deps (front)
+        if: ${{ matrix.app == 'front' }}
+        working-directory: front
+        run: npm ci --workspaces=false
+
+      # ------- DB readiness -------
+      - name: Wait for Postgres (back only)
+        if: ${{ matrix.app == 'back' }}
+        run: |
+          for i in {1..40}; do
+            nc -z 127.0.0.1 55432 && exit 0
+            sleep 1
+          done
+          echo "Postgres not ready" && exit 1
+
+      # ------- Prisma prep / migrations -------
+      - name: ci:prep (back only)
+        if: ${{ matrix.app == 'back' }}
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:55432/oclaris
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          REDIS_URL:  ${{ secrets.REDIS_URL }}
+        run: npm --prefix ./back run ci:prep
+
+      # ------- Lint / Test / Build -------
+      - name: Lint
+        run: npm --prefix ./${{ matrix.app }} run lint --if-present
+
+      - name: Test
+        env:
+          CI: true
+        run: npm --prefix ./${{ matrix.app }} run test --if-present
+
+      - name: Build
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:55432/oclaris
+        run: npm --prefix ./${{ matrix.app }} run build --if-present
