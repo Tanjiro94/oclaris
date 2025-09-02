@@ -7,8 +7,11 @@
 
 <script lang="ts" setup>
 import type { ButtonProps } from '@/ts/Button';
-import { computed } from 'vue';
-const props = defineProps<ButtonProps>();
+import { computed, withDefaults } from 'vue';
+const props = withDefaults(defineProps<ButtonProps>(), {
+    type: 'button',
+    className: '',
+});
 
 const typeClass = computed(() => {
     if(!props.typeClass) return 'button-primary';
@@ -54,12 +57,15 @@ const sizeClass = computed(() => {
 /* size */
 .button-sm{
     min-width: 100px;
+    width: fit-content;
 }
 .button-md{
     min-width: 150px;
+    width: fit-content;
 }
 .button-lg{
     min-width: 250px;
+    width: fit-content;
 }
 
 /* type */

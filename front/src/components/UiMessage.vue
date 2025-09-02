@@ -1,8 +1,8 @@
 <template>
-    <div class="message-container-fixed" :style="{ pointerEvents: isOpen ? 'auto' : 'none', backdropFilter: isOpen ? 'blur(2px)' : 'none' }">
+    <div class="message-container-fixed" :style="{ pointerEvents: props.isOpen ? 'auto' : 'none', backdropFilter: props.isOpen ? 'blur(2px)' : 'none' }">
         <div class="message-container">
             <transition name="slide-fade" mode="out-in">
-                <div class="message-container content" :class="typeClass" v-if="isOpen">
+                <div class="message-container content" :class="typeClass" v-show="props.isOpen">
                     <i :class="props.type === 'success' ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark'"></i>
                     <p>{{ props.message }}</p>
                     <i class="fa-solid fa-xmark close-icon" @click="closeMessage"></i>
@@ -13,10 +13,17 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue';
-const props = defineProps<{
+import { computed, withDefaults } from 'vue';
+const props = withDefaults(defineProps<{
     type: 'success' | 'error';
     message: string;
+    isOpen: boolean;
+}>(), {
+    isOpen: false,
+});
+
+const emit = defineEmits<{
+    (e: 'update:isOpen', value: boolean): void
 }>();
 
 const typeClass = computed(() => {
@@ -30,10 +37,9 @@ const typeClass = computed(() => {
     }
 });
 
-const isOpen = ref(false);
 
 function closeMessage() {
-    isOpen.value = false;
+    emit('update:isOpen', false);
 }
 </script>
 
