@@ -15,9 +15,9 @@ html {
   font-size: 16px;
 }
 
-#app {
+/* #app {
   padding-top: calc(80 / 16 * 1rem);
-}
+} */
 
 body {
   background-color: var(--secondary-grey);
