@@ -1,5 +1,5 @@
 <template>
-    <div class="login-page">
+    <div class="register-page">
         <div class="logo-mobile-wrapper">
         <img src="../../public/assets/logo-black.svg" alt="logo" class="logo-mobile-fixed">
         </div>
@@ -9,20 +9,25 @@
         <div class="right-side">
             <div class="content">
                 <div class="text-container">
-                    <h1>Hey, content de te revoir !</h1>
+                    <h1>Hey, le nouveau !</h1>
                     <p>Deviens le maître dans l’organisation de tes shooting photos</p>
                 </div>
-                <form class="form-container" @submit.prevent="login">
+                <form class="form-container" @submit.prevent="register">
                     <div class="form-group">
                     <Input label="Email" type="email" placeholder="Email" size="lg" v-model="email" name="email" id="email" />
                     </div>
                     <div class="form-group">
+                    <Input label="Nom d'utilisateur" type="text" placeholder="Nom d'utilisateur" size="lg" v-model="username" name="username" id="username" />
+                    </div>
+                    <div class="form-group">
                     <Input label="Mot de passe" type="password" placeholder="Mot de passe" size="lg" v-model="password" name="password" id="password" />
                     </div>
-                    <p><a href="/forgot-password" class="forgot-password-link">Mot de passe oublié ?</a></p>
-                    <Button text="Se connecter" typeClass="primary" type="submit" />
+                    <div class="form-group">
+                    <Input label="Confirmation du mot de passe" type="password" placeholder="Confirmation du mot de passe" size="lg" v-model="passwordConfirm" name="passwordConfirm" id="passwordConfirm" />
+                    </div>
+                    <Button text="S'inscrire" typeClass="primary" type="submit" />
                 </form>
-                <p>Pas de compte ? <a href="/register" class="register-link">Inscris toi maintenant !</a></p>
+                <p>Déjà un compte ? <a href="/login" class="register-link">Connecte-toi maintenant !</a></p>
             </div>
         </div>
         <Message type="error" :message="message" v-if="message" :isOpen="error" @update:isOpen="error = $event" />
@@ -38,24 +43,32 @@ import Message from '@/components/UiMessage.vue';
 
 const email = ref('');
 const password = ref('');
+const username = ref('');
+const passwordConfirm = ref('');
 const message = ref('');
 const error = ref(false);
 const success = ref(false);
 
-async function login() {
-    if(!email.value || !password.value) {
+async function register() {
+    if(!email.value || !password.value || !username.value || !passwordConfirm.value) {
         message.value = 'Veuillez remplir tous les champs';
         error.value = true;
         return;
     }
-    console.log(email.value, password.value);
+    const payload = {
+        email: email.value,
+        password: password.value,
+        username: username.value,
+        passwordConfirm: passwordConfirm.value,
+    }
+    console.log(payload);
     success.value = true;
-    message.value = 'Connexion réussie';
+    message.value = 'Inscription réussie';
 }
 </script>
 
 <style scoped>
-.login-page {
+.register-page {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -114,7 +127,7 @@ async function login() {
 
 
 @media (max-width: 768px) {
-    .login-page {
+    .register-page {
         min-height: 100dvh;
         height: auto;
         flex-direction: column;
