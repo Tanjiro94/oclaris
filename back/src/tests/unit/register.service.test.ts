@@ -2,6 +2,14 @@ import { registerService } from '../../modules/auth/services/register.service.js
 import prisma from '../../infra/db/prismaClient.js';
 import * as hash from '../../infra/crypto/bcrypt.service.js';
 
+jest.mock('../../modules/auth/services/verification-token.service.js', () => ({
+    createVerificationToken: jest.fn().mockResolvedValue('dummy-token'),
+    invalidateVerificationToken: jest.fn().mockResolvedValue(undefined),
+}));
+    
+jest.mock('../../infra/mail/mailer.js', () => ({
+    sendMail: jest.fn().mockResolvedValue(undefined),
+}));
 
 
 type MockUser = {
@@ -31,7 +39,7 @@ test('should throw if email already exists', async () => {
 test('should throw if username already exists', async () => {
     jest.spyOn(prisma.user, 'findUnique')
     .mockResolvedValueOnce(null)
-    .mockResolvedValueOnce({ id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', email: 'test2@test.com', username: 'test2', password_hash: 'password', verified_at: null, created_at: new Date(), updated_at: new Date(), verification_token_hash: null, verification_expires_at: null } as MockUser);
+    .mockResolvedValueOnce({ id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', email: 'test2@test.com', username: 'test2', password_hash: 'password', verified_at: null, created_at: new Date(), updated_at: new Date(), verification_token_hash: null, verification_expires_at: null } as MockUser);
     await expect(registerService({
         email: 'test2@test.com',
         password: 'password',
