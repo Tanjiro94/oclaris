@@ -6,9 +6,9 @@ jest.mock('../../modules/auth/services/verification-token.service.js', () => ({
     createVerificationToken: jest.fn().mockResolvedValue('dummy-token'),
     invalidateVerificationToken: jest.fn().mockResolvedValue(undefined),
 }));
-    
+
 jest.mock('../../infra/mail/mailer.js', () => ({
-    sendMail: jest.fn().mockResolvedValue(undefined),
+    sendEmail: jest.fn().mockResolvedValue(undefined),
 }));
 
 
