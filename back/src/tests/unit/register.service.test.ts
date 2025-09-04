@@ -18,7 +18,7 @@ type MockUser = {
 
 test('should throw if email already exists', async () => {
     jest.spyOn(prisma.user, 'findUnique')
-    .mockResolvedValueOnce({ id: '123', email: 'test@test.com', username: 'test', password_hash: 'password', verified_at: null, created_at: new Date(), updated_at: new Date(), verification_token_hash: null, verification_expires_at: null } as MockUser);
+    .mockResolvedValueOnce({ id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', email: 'test@test.com', username: 'test', password_hash: 'password', verified_at: null, created_at: new Date(), updated_at: new Date(), verification_token_hash: null, verification_expires_at: null } as MockUser);
     await expect(registerService({
         email: 'test@test.com',
         password: 'password',
@@ -31,7 +31,7 @@ test('should throw if email already exists', async () => {
 test('should throw if username already exists', async () => {
     jest.spyOn(prisma.user, 'findUnique')
     .mockResolvedValueOnce(null)
-    .mockResolvedValueOnce({ id: '124', email: 'test2@test.com', username: 'test2', password_hash: 'password', verified_at: null, created_at: new Date(), updated_at: new Date(), verification_token_hash: null, verification_expires_at: null } as MockUser);
+    .mockResolvedValueOnce({ id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', email: 'test2@test.com', username: 'test2', password_hash: 'password', verified_at: null, created_at: new Date(), updated_at: new Date(), verification_token_hash: null, verification_expires_at: null } as MockUser);
     await expect(registerService({
         email: 'test2@test.com',
         password: 'password',
@@ -48,7 +48,7 @@ test('should create a user if all is good', async () => {
     const createdAt = new Date('2025-01-01T00:00:00.000Z');
 
     jest.spyOn(prisma.user, 'create').mockResolvedValueOnce({
-        id: '125',
+        id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
         email: 'test3@test.com',
         password_hash: 'password3',
         username: 'test3',
@@ -70,7 +70,7 @@ test('should create a user if all is good', async () => {
     
     expect(hashSpy).toHaveBeenCalledWith('password3');
     expect(result).toEqual({
-        id: '125',
+        id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
         email: 'test3@test.com',
         username: 'test3',
         createdAt: createdAt,
