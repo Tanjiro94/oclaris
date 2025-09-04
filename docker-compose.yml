@@ -6,7 +6,37 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports: ["55432:5432"]
-    volumes: ["pgdata:/var/lib/postgresql/data"]
+    volumes: 
+    - "pgdata:/var/lib/postgresql/data"
+    - ./docker/init:/docker-entrypoint-initdb.d
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 2s
+      retries: 20
+
+  prisma-init:
+    image: node:20-alpine
+    depends_on:
+      db:
+        condition: service_healthy
+    working_dir: /app
+    volumes:
+      - ./back:/app
+    environment:
+      PGPASSWORD: postgres
+    command: >
+      sh -c "
+        echo '🚀 Applying Prisma schema on dev & test DBs...';
+        # Optionnel : installer les deps si tu veux éviter le fetch npx à chaque run :
+        # npm ci --omit=optional || true;
+        DATABASE_URL=postgres://postgres:postgres@db:5432/oclaris npx prisma db push --skip-generate --schema prisma/schema.prisma &&
+        DATABASE_URL=postgres://postgres:postgres@db:5432/oclaris_test npx prisma db push --skip-generate --schema prisma/schema.prisma &&
+        echo '✅ Prisma schema applied.'
+      "
+    restart: "no"
+    
   redis:
     image: redis:7-alpine
     ports: ["6379:6379"]

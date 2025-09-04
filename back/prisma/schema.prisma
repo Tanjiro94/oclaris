@@ -169,6 +169,8 @@ model user {
   password_hash  String
   username       String           @unique @db.VarChar(50)
   verified_at    DateTime?        @db.Timestamptz(6)
+  verification_token_hash   String?
+  verification_expires_at   DateTime?
   created_at     DateTime         @default(now()) @db.Timestamptz(6)
   updated_at     DateTime         @default(now()) @db.Timestamptz(6)
   art_direction  art_direction[]
