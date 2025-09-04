@@ -99,7 +99,7 @@ jobs:
           CORS_ORIGIN: ${{ secrets.CORS_ORIGIN }}
           PORT: ${{ secrets.PORT }}
           BCRYPT_SALT_ROUNDS: ${{ secrets.BCRYPT_SALT_ROUNDS }}
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_API_KEY: "re_PaZvu3UZ_6bTC6yuFmE2UpY9pNM6N9KHe"
           MAIL_FROM: "Oclaris <onboarding@resend.dev>"
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           REDIS_URL:  ${{ secrets.REDIS_URL }}
@@ -121,7 +121,7 @@ jobs:
           PORT: "3000"
           API_URL: http://localhost:3000/api
           APP_URL: http://localhost:5173
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_API_KEY: "re_PaZvu3UZ_6bTC6yuFmE2UpY9pNM6N9KHe"
           MAIL_FROM: "Oclaris <onboarding@resend.dev>"
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           REDIS_URL:  ${{ secrets.REDIS_URL }}
