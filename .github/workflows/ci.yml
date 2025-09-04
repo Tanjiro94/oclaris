@@ -80,10 +80,27 @@ jobs:
           echo "Postgres not ready" && exit 1
 
       # ------- Prisma prep / migrations -------
+
+      - name: Prisma db push (back only)
+        if: ${{ matrix.app == 'back' }}
+        working-directory: back
+
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:55432/oclaris_test
+        run: npx prisma db push --schema prisma/schema.prisma --skip-generate
       - name: ci:prep (back only)
         if: ${{ matrix.app == 'back' }}
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:55432/oclaris
+          DATABASE_URL_TEST: postgresql://postgres:postgres@localhost:55432/oclaris_test
+          ENVIRONMENT: test
+          API_URL: http://localhost:3000/api
+          APP_URL: http://localhost:5173
+          CORS_ORIGIN: ${{ secrets.CORS_ORIGIN }}
+          PORT: ${{ secrets.PORT }}
+          BCRYPT_SALT_ROUNDS: ${{ secrets.BCRYPT_SALT_ROUNDS }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          MAIL_FROM: "Oclaris <onboarding@resend.dev>"
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           REDIS_URL:  ${{ secrets.REDIS_URL }}
         run: npm --prefix ./back run ci:prep
@@ -93,6 +110,25 @@ jobs:
         run: npm --prefix ./${{ matrix.app }} run lint --if-present
 
       - name: Test
+        # NOTE: on redonne les mêmes env pour le step de test back
+        if: ${{ matrix.app == 'back' }}
+        env:
+          CI: true
+          DATABASE_URL: postgresql://postgres:postgres@localhost:55432/oclaris_test
+          DATABASE_URL_TEST: postgresql://postgres:postgres@localhost:55432/oclaris_test
+          ENVIRONMENT: test
+          CORS_ORIGIN: http://localhost:5173
+          PORT: "3000"
+          API_URL: http://localhost:3000/api
+          APP_URL: http://localhost:5173
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          MAIL_FROM: "Oclaris <onboarding@resend.dev>"
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          REDIS_URL:  ${{ secrets.REDIS_URL }}
+        run: npm --prefix ./back run test --if-present
+
+      - name: Test
+        if: ${{ matrix.app == 'front' }}
         env:
           CI: true
         run: npm --prefix ./${{ matrix.app }} run test --if-present
