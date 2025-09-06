@@ -13,6 +13,10 @@ export const errorHandler = (err: Error, _req: Request, res: Response, _next: Ne
 
     console.log('[ERROR] ', err);
 
+    if (!(err instanceof AppError && err.statusCode === 401)) {
+        console.log('[ERROR] ', err);
+    }
+
     if(err instanceof ZodError) {
         const fieldErrors : Record<string, string> = {};
         for (const issue of err.issues) {

@@ -18,8 +18,16 @@ api.interceptors.response.use(
     };
         try {
             const store = useMessageStore();
+            const status = err.response?.status;
+            const url = (err.config?.url as string) || '';
+            const silent = err?.config?.headers?.['x-silent'] === 'true';
             
-            store.error(normalized.message);
+            const isMe401 = status === 401 && url.includes('/auth/me');
+
+            if(!isMe401 && !silent) {
+                const msg = err?.response?.data?.message ?? 'Erreur réseau';
+                store.error(msg);
+            }
         } catch {
             console.error('Store not ready');
         }

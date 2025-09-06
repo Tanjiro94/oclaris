@@ -13,3 +13,11 @@ export const setCookie = (res: Response, name: string, value: string) => {
 export const getCookie = (req: Request, name: string) => {
     return req.cookies[name];
 };
+
+export const clearCookie = (res: Response, name: string) => {
+    res.clearCookie(name, {
+        httpOnly: true,
+        secure: env.ENVIRONMENT === 'production',
+        sameSite: 'strict',
+    });
+}

@@ -5,13 +5,13 @@ export async function verifyEmailController(req: Request, res: Response) {
     const token = String(req.query.token || '');
     const email = String(req.query.email || '');
     if (!token || !email) {
-    return res.redirect(`${process.env.APP_URL}/login?verified=0`);
+    return res.redirect(`${process.env.APP_URL}/?verified=0`);
     }
 
     const userId = await consumeVerificationToken(email, token);
     if (!userId) {
-    return res.redirect(`${process.env.APP_URL}/login?verified=0`);
+    return res.redirect(`${process.env.APP_URL}/?verified=0`);
     }
 
-    return res.redirect(`${process.env.APP_URL}/login?verified=1`);
+    return res.redirect(`${process.env.APP_URL}/?verified=1`);
 }

@@ -1,9 +1,14 @@
 import request from 'supertest';
 import app from '../../config/app.js';
 import prisma from '../../infra/db/prismaClient.js';
+import * as mailer from '../../infra/mail/mailer.js';
+
+jest.mock('../../infra/mail/mailer.js', () => ({
+    sendEmail: jest.fn().mockResolvedValue(undefined),
+}));
 
 beforeEach(async () => {
-    await prisma.user.deleteMany({ where: {email: 'salahdinbenaouda@gmail.com'}});
+    await prisma.user.deleteMany({ where: { email: 'salahdinbenaouda@gmail.com' } });
 });
 
 test('POST /auth/register should register a user', async () => {
@@ -27,8 +32,8 @@ test('POST /auth/register should register a user', async () => {
     });
     expect(inDb).not.toBeNull();
     expect(inDb?.username).toBe('salahdinbenaouda');
+    expect(mailer.sendEmail).toHaveBeenCalledTimes(1);
 });
-
 
 afterAll(async () => {
     await prisma.$disconnect();

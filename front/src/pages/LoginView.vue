@@ -12,45 +12,82 @@
                     <h1>Hey, content de te revoir !</h1>
                     <p>Deviens le maître dans l’organisation de tes shooting photos</p>
                 </div>
-                <form class="form-container" @submit.prevent="login">
+                <form class="form-container" @submit.prevent="onSubmit">
                     <div class="form-group">
-                    <Input label="Email" type="email" placeholder="Email" size="lg" v-model="email" name="email" id="email" />
+                    <Input label="Email" type="email" placeholder="Email" size="lg" v-model="form.email" name="email" id="email" />
                     </div>
                     <div class="form-group">
-                    <Input label="Mot de passe" type="password" placeholder="Mot de passe" size="lg" v-model="password" name="password" id="password" />
+                    <Input label="Mot de passe" type="password" placeholder="Mot de passe" size="lg" v-model="form.password" name="password" id="password" />
                     </div>
                     <p><a href="/forgot-password" class="forgot-password-link">Mot de passe oublié ?</a></p>
-                    <Button text="Se connecter" typeClass="primary" type="submit" />
+                    <Button text="Se connecter" typeClass="primary" type="submit" :loading="loading" />
                 </form>
                 <p>Pas de compte ? <a href="/register" class="register-link">Inscris toi maintenant !</a></p>
             </div>
         </div>
-        <Message type="error" :message="message" v-if="message" :isOpen="error" @update:isOpen="error = $event" />
-        <Message type="success" :message="message" v-if="message" :isOpen="success" @update:isOpen="success = $event" />
     </div>
 </template>
 
 <script lang="ts" setup>
 import Input from '@/components/UiInput.vue';
 import Button from '@/components/UiButton.vue';
-import { ref } from 'vue';
-import Message from '@/components/UiMessage.vue';
+import { ref, reactive } from 'vue';
+import { useMessageStore } from '@/stores/message';
+import { useAuthStore } from '@/stores/auth';
+import { useRouter } from 'vue-router';
+import { loginSchema, type LoginSchema } from '@/ts/api/validator/login';
+import type { AxiosError } from 'axios';
+import type { apiErrors } from '@/ts/api/apiErrors';
+import { login } from '@/ts/api/auth';
 
-const email = ref('');
-const password = ref('');
-const message = ref('');
-const error = ref(false);
-const success = ref(false);
+const router = useRouter();
+const authStore = useAuthStore();
 
-async function login() {
-    if(!email.value || !password.value) {
-        message.value = 'Veuillez remplir tous les champs';
-        error.value = true;
-        return;
+const form = reactive<LoginSchema>({
+    email: '',
+    password: '',
+});
+
+const errors = reactive<Record<string, string>>({});
+const loading = ref(false);
+
+const validate = () => {
+    Object.keys(errors).forEach(k => delete errors[k]);
+    const parsed = loginSchema.safeParse(form);
+    if (!parsed.success) {
+        for (const issue of parsed.error.issues) {
+            const key = (issue.path[0] as string) ?? 'form';
+            errors[key] = issue.message;
+        }
+        return false;
     }
-    console.log(email.value, password.value);
-    success.value = true;
-    message.value = 'Connexion réussie';
+    return true;
+}
+
+
+const onSubmit = async () => {
+    if (!validate()) return;
+    loading.value = true;
+    const messageStore = useMessageStore();
+    try {
+        const {data } = await login(form);
+        authStore.setUser(data.user);
+        messageStore.success('Connexion réussie');
+        router.push('/dashboard');
+    }catch (error: unknown) {
+        const axiosErr = error as AxiosError<apiErrors>;
+
+        Object.keys(errors).forEach(k => delete errors[k]);
+        if(axiosErr?.response?.data?.errors) {
+            for (const [field, msg] of Object.entries(axiosErr.response.data.errors)) {
+                errors[field] = msg;
+            }
+        } else if(axiosErr?.response?.data?.message) {
+            messageStore.error(axiosErr.response.data.message);
+        }
+    } finally {
+        loading.value = false;
+    }
 }
 </script>
 
