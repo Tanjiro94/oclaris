@@ -1,5 +1,5 @@
 <template>
-    <button class="button" :class="props.className + ' ' + typeClass + ' ' + sizeClass" :style="props.styleAttr" :disabled="props.disabled" :loading="props.loading" :type="props.type" :id="props.id" :name="props.name" @click="props.action">
+    <button class="button" :class="props.className + ' ' + typeClass + ' ' + sizeClass" :style="props.styleAttr" :disabled="props.disabled || props.loading" :loading="props.loading" :type="props.type" :id="props.id" :name="props.name" @click="props.action">
         <i :class="props.icon"></i>
         <span>{{ props.text }}</span>
     </button>
