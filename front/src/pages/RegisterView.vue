@@ -92,6 +92,8 @@ const validate = () => {
     return true;
 }
 
+
+// rules of register
 const hasTwelveChars = (p: string) => p.length >= 12;
 const hasUppercase   = (p: string) => /[A-Z]/.test(p);
 const hasNumber      = (p: string) => /\d/.test(p);
