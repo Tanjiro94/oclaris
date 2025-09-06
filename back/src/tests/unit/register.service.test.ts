@@ -32,7 +32,11 @@ test('should throw if email already exists', async () => {
         password: 'password',
         passwordConfirm: 'password',
         username: 'test',
-    })).rejects.toThrow('Email already exists');
+    })).rejects.toMatchObject({
+        message: 'Email déjà utilisé',
+        code: 'EMAIL_TAKEN',
+        errors: { email: 'Email déjà utilisé' },
+    });
 });
 
 
@@ -45,7 +49,11 @@ test('should throw if username already exists', async () => {
         password: 'password',
         passwordConfirm: 'password',
         username: 'test2',
-    })).rejects.toThrow('Username already exists');
+    })).rejects.toMatchObject({
+        message: 'Username déjà utilisé',
+        code: 'USERNAME_TAKEN',
+        errors: { username: 'Username déjà utilisé' },
+    });
 });
 
 test('should create a user if all is good', async () => {

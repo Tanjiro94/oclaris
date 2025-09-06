@@ -3,7 +3,6 @@ import prisma from '../../infra/db/prismaClient.js';
 import * as bcrypt from '../../infra/crypto/bcrypt.service.js';
 import * as jwt from '../../infra/jwt/jwt.service.js';
 import * as cookie from '../../infra/cookie/cookie.service.js';
-import AppError from '../../core/errors/AppError.js';
 import type { Response } from 'express';
 
 afterEach(() => {
@@ -29,7 +28,11 @@ test('throws 404 when user not found', async () => {
 
     await expect(
     loginService('unknown@mail.com', 'whatever', {} as Response)
-    ).rejects.toEqual(new AppError('Utilisateur non trouvé', 404));
+    ).rejects.toMatchObject({
+        message: 'Utilisateur non trouvé',
+        code: 'USER_NOT_FOUND',
+        errors: { email: 'Utilisateur non trouvé' },
+    });
 
     expect(prisma.user.findUnique).toHaveBeenCalledWith({
     where: { email: 'unknown@mail.com' },
@@ -49,7 +52,11 @@ test('throws 401 when user is not verified', async () => {
 
     await expect(
     loginService('test@mail.com', 'whatever', {} as Response)
-    ).rejects.toEqual(new AppError('Utilisateur non vérifié', 401));
+    ).rejects.toMatchObject({
+        message: 'Utilisateur non vérifié',
+        code: 'USER_NOT_VERIFIED',
+        errors: { email: 'Utilisateur non vérifié' },
+    });
 
     expect(prisma.user.findUnique).toHaveBeenCalledWith({
     where: { email: 'test@mail.com' },
@@ -70,7 +77,11 @@ test('throws 401 when password is invalid', async () => {
 
     await expect(
     loginService('test@mail.com', 'bad-password', {} as Response)
-    ).rejects.toEqual(new AppError('Mot de passe incorrect', 401));
+    ).rejects.toMatchObject({
+        message: 'Mot de passe incorrect',
+        code: 'INVALID_PASSWORD',
+        errors: { password: 'Mot de passe incorrect' },
+    });
 
     expect(bcrypt.compare).toHaveBeenCalledWith('bad-password', 'hashed_pwd');
 });
