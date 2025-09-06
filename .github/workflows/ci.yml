@@ -123,7 +123,7 @@ jobs:
           APP_URL: http://localhost:5173
           RESEND_API_KEY: "re_PaZvu3UZ_6bTC6yuFmE2UpY9pNM6N9KHe"
           MAIL_FROM: "Oclaris <onboarding@resend.dev>"
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_SECRET: "ci-test-secret"
           REDIS_URL:  ${{ secrets.REDIS_URL }}
         run: npm --prefix ./back run test --if-present
 
