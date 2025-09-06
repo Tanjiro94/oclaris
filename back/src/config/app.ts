@@ -14,16 +14,18 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(cookieParser());
 
+app.use(cors({
+    origin: env.CORS_ORIGIN,
+    credentials: true,
+}));
+
 app.get('/', (req, res) => {
     res.send('Welcome to Oclaris API');
 });
 
 app.use('/api', router);
 
-app.use(cors({
-    origin: env.CORS_ORIGIN,
-    credentials: true,
-}));
+
 
 app.use(helmet());
 

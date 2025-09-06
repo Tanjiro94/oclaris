@@ -12,13 +12,13 @@ export const registerService = async (data: RegisterSchema) => {
         where: { email },
     });
     if (emailExists) {
-        throw new AppError('Email already exists', 400);
+        throw new AppError('Email déjà utilisé', 400, { code: 'EMAIL_TAKEN' , errors: { email: 'Email déjà utilisé' } });
     }
     const usernameExists = await prisma.user.findUnique({
         where: { username },
     });
     if (usernameExists) {
-        throw new AppError('Username already exists', 400);
+        throw new AppError('Username déjà utilisé', 400, { code: 'USERNAME_TAKEN' , errors: { username: 'Username déjà utilisé' } });
     }
     const hashedPassword = await hash(password);
     
