@@ -1,10 +1,10 @@
 <template>
     <div class="login-page">
         <div class="logo-mobile-wrapper">
-        <img src="../../public/assets/logo-black.svg" alt="logo" class="logo-mobile-fixed">
+        <img src="/assets/logo-black.svg" alt="logo" class="logo-mobile-fixed">
         </div>
         <div class="left-side container">
-            <img src="../../public/assets/logo-black.svg" alt="logo">
+            <img src="/assets/logo-black.svg" alt="logo">
         </div>
         <div class="right-side">
             <div class="content">

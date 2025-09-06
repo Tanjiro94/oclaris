@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
+import AppMessage from '@/components/AppMessage.vue';
 </script>
 
 <template>
@@ -23,6 +24,7 @@ import { RouterView } from 'vue-router'
   </div>
 
 <router-view></router-view>
+<AppMessage />
 </template>
 
 <style scoped></style>
