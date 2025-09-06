@@ -43,7 +43,7 @@
                     </div>
                     <Button text="S'inscrire" typeClass="primary" type="submit" :loading="loading" :disabled="passedCount !== 4" />
                 </form>
-                <p>Déjà un compte ? <a href="/login" class="register-link">Connecte-toi maintenant !</a></p>
+                <p>Déjà un compte ? <a href="/" class="register-link">Connecte-toi maintenant !</a></p>
             </div>
         </div>
     </div>
