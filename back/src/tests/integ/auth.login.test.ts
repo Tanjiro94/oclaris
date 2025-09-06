@@ -23,6 +23,10 @@ test('returns 404 when user not found', async () => {
     .post('/api/auth/login')
     .send({ email: EMAIL, password: 'Whatever123!' });
 
+    if(res.status !== 404) {
+        console.log('[LOGIN DEBUG] ', res.body);
+    }
+
     expect(res.status).toBe(404);
     expect(res.body?.message).toMatch(/Utilisateur non trouvé/i);
 });
@@ -41,6 +45,10 @@ test('returns 401 when password is invalid', async () => {
     const res = await request(app)
     .post('/api/auth/login')
     .send({ email: EMAIL, password: 'WrongPwd123!' });
+
+    if(res.status !== 401) {
+        console.log('[LOGIN DEBUG] ', res.body);
+    }
 
     expect(res.status).toBe(401);
     expect(res.body?.message).toMatch(/Mot de passe incorrect/i);
@@ -72,6 +80,10 @@ test('returns 200, sets cookie and returns user + token when credentials are val
     const res = await request(app)
     .post('/api/auth/login')
     .send({ email: EMAIL, password: 'CorrectPwd123!' });
+
+    if(res.status !== 200) {
+        console.log('[LOGIN DEBUG] ', res.body);
+    }
 
     expect(res.status).toBe(200);
 

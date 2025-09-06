@@ -1,5 +1,3 @@
-// login.service.test.ts
-
 import { loginService } from '../../modules/auth/services/login.service.js';
 import prisma from '../../infra/db/prismaClient.js';
 import * as bcrypt from '../../infra/crypto/bcrypt.service.js';
