@@ -5,12 +5,12 @@
                 
                 <li class="logo" aria-label="logo">
                     <RouterLink to="/">
-                    <img src="../../public/assets/logo.svg" alt="logo" />
+                    <img src="/assets/logo.svg" alt="logo" />
                     </RouterLink>
                 </li>
                 <li class="logo-mobile" aria-label="menu">
                     <RouterLink to="/">
-                    <img src="../../public/assets/logo-mobile.svg" alt="menu" />
+                    <img src="/assets/logo-mobile.svg" alt="menu" />
                     </RouterLink>
                 </li>
             </ul>
