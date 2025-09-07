@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import { env } from './env.js';
 import router from '../routes/auth.js';
 import { errorHandler } from './ErrorHandler.js';
+import dashboardRoutes from '../routes/dashboard.js';
 
 const app = express();
 
@@ -24,6 +25,8 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api', router);
+
+app.use('/api', dashboardRoutes);
 
 
 
