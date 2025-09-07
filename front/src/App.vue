@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
+import { useRoute } from 'vue-router';
+import Header from '@/components/UiHeader.vue';
+const route = useRoute();
 import AppMessage from '@/components/AppMessage.vue';
 </script>
 
@@ -23,8 +26,20 @@ import AppMessage from '@/components/AppMessage.vue';
     </div>
   </div>
 
-<router-view></router-view>
+<Header v-if="route.path !== '/' && route.path !== '/register'" />
+
+<main :class="route.path === '/' || route.path === '/register' ? 'no-padding' : 'main'">
+  <router-view></router-view>
+</main>
 <AppMessage />
 </template>
 
-<style scoped></style>
+<style scoped>
+main.main{
+  padding-top: calc(80 / 16 * 1rem);
+}
+
+main.no-padding{
+  padding-top: 0;
+}
+</style>
