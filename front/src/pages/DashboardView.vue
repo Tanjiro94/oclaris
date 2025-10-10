@@ -3,10 +3,10 @@
         <h1 class="title container">Oclaris - Dashboard</h1>
         <div class="container banner-stats-wrapper">
             <div class="row banner-stats-item">
-                <div class="stats-item-wrapper col col-xl-3 col-md-6 col-sm-3 col-xs-4" v-for="stat in bannerStats" :key="stat.title">
+                <div class="stats-item-wrapper col col-xl-3 col-md-6 col-sm-3 col-xs-4" v-for="stat in bannerStats" :key="stat?.title">
                     <div class="stat-item">
-                        <h2 class="stat-title">{{ stat.title }}</h2>
-                        <p class="stat-value">{{ stat.value }} {{ stat.type === 'percentage' ? '%' : '' }}</p>
+                        <h2 class="stat-title">{{ stat?.title }}</h2>
+                        <p class="stat-value">{{ stat?.value }} {{ stat?.type === 'percentage' ? '%' : '' }}</p>
                     </div>
                 </div>
             </div>
@@ -63,7 +63,13 @@ import { dashboardSchema } from '@/ts/api/validator/dashboard';
 import { useMessageStore } from '@/stores/message';
 import type { AxiosError } from 'axios' */
 
-const bannerStats = ref([]);
+type BannerStat = {
+    title: string;
+    value: number;
+    type: string;
+}
+
+const bannerStats = ref<BannerStat[]>([]);
 
 const historyDA = ref([
     {
