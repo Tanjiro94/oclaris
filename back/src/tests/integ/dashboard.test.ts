@@ -45,10 +45,10 @@ test('returns 200 and a valid dashboard payload when authenticated', async () =>
 
     const d = res.body.dashboard;
     
-    expect(typeof d.successRate30d).toBe('number');
-    expect(typeof d.satisfactionRate30d).toBe('number');
-    expect(typeof d.favorites30d).toBe('number');
-    expect(typeof d.generations30d).toBe('number');
+    expect(typeof d.bannerStat.successRate30d.value).toBe('number');
+    expect(typeof d.bannerStat.satisfactionRate30d.value).toBe('number');
+    expect(typeof d.bannerStat.favorites30d.value).toBe('number');
+    expect(typeof d.bannerStat.generations30d.value).toBe('number');
 
     expect(Array.isArray(d.stylesTop5)).toBe(true);
     expect(Array.isArray(d.latest4)).toBe(true);

@@ -3,10 +3,10 @@
         <h1 class="title container">Oclaris - Dashboard</h1>
         <div class="container banner-stats-wrapper">
             <div class="row banner-stats-item">
-                <div class="stats-item-wrapper col col-xl-3 col-md-6 col-sm-3 col-xs-4" v-for="stat in bannerStats" :key="stat.title">
+                <div class="stats-item-wrapper col col-xl-3 col-md-6 col-sm-3 col-xs-4" v-for="stat in bannerStats" :key="stat?.title">
                     <div class="stat-item">
-                        <h2 class="stat-title">{{ stat.title }}</h2>
-                        <p class="stat-value">{{ stat.value }} {{ stat.type === 'percentage' ? '%' : '' }}</p>
+                        <h2 class="stat-title">{{ stat?.title }}</h2>
+                        <p class="stat-value">{{ stat?.value }} {{ stat?.type === 'percentage' ? '%' : '' }}</p>
                     </div>
                 </div>
             </div>
@@ -54,32 +54,22 @@
 </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import BarChart from '@/components/BarChart.vue';
 import LineChart from '@/components/LineChart.vue';
+import { getDashboard } from '@/ts/api/dashboard';
+/*
+import { dashboardSchema } from '@/ts/api/validator/dashboard';
+import { useMessageStore } from '@/stores/message';
+import type { AxiosError } from 'axios' */
 
-const bannerStats = ref([
-    {
-        title: 'Taux de réussite - 30j',
-        value: 86,
-        type: 'percentage'
-    },
-    {
-        title: 'Taux de satisfaction - 30j',
-        value: 72,
-        type: 'percentage'
-    },
-    {
-        title: 'Nombre de favoris - 30j',
-        value: 21,
-        type: 'number'
-    },
-    {
-        title: 'Nombre de générations - 30j',
-        value: 32,
-        type: 'number'
-    },
-]);
+type BannerStat = {
+    title: string;
+    value: number;
+    type: string;
+}
+
+const bannerStats = ref<BannerStat[]>([]);
 
 const historyDA = ref([
     {
@@ -104,8 +94,24 @@ const historyDA = ref([
     }
 ])
 
-const labels = ['Urbain', 'Portrait', 'Action', 'Studio', 'Nature']
+const labels = ref([])
 const values = [75, 98, 86, 42, 80]
+
+const getDashboardData = async ()=> {
+    try{
+        const data = await getDashboard();
+        bannerStats.value = data.dashboard.bannerStat;
+        //activity
+        
+        console.log(data);
+    }catch(err){
+        console.log(err);
+    }
+}
+
+onMounted(()=>{
+    getDashboardData()
+})
 
 
 
