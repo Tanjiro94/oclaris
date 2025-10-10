@@ -43,10 +43,10 @@ test('retourne des zéros et tableaux vides quand pas de données', async () => 
 
     const result = await dashboardService(userId);
 
-    expect(result.successRate30d).toBe(0);
-    expect(result.satisfactionRate30d).toBe(0);
-    expect(result.generations30d).toBe(0);
-    expect(result.favorites30d).toBe(0);
+    expect(result.bannerStat.successRate30d.value).toBe(0);
+    expect(result.bannerStat.satisfactionRate30d.value).toBe(0);
+    expect(result.bannerStat.generations30d.value).toBe(0);
+    expect(result.bannerStat.favorites30d.value).toBe(0);
 
     expect(result.stylesTop5).toEqual([]);
     expect(result.latest4).toEqual([]);
