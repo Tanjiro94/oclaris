@@ -113,10 +113,12 @@ export const dashboardService = async (userId: string) : Promise<DashboardSchema
 
 
     const result = {
-        successRate30d,
-        satisfactionRate30d,
-        favorites30d: nbFavorites30d,
-        generations30d: nbGenerations30d,
+        bannerStat : {
+            successRate30d : { title : 'Taux de réussite - 30j', value : successRate30d, type: 'percentage'},
+            satisfactionRate30d : { title : 'Taux de satisfaction - 30j', value : satisfactionRate30d, type: 'percentage'},
+            favorites30d: { title : 'Nombre de favoris - 30j', value : nbFavorites30d, type: ''},
+            generations30d: { title : 'Nombre de générations - 30j', value : nbGenerations30d, type: ''},
+        },
         stylesTop5: stylesTop5,
         latest4: latest4, 
         activity: {
