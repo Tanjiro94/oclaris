@@ -15,22 +15,27 @@
             <div class="row second-stage-item-wrapper">
                 <div class="col col-xl-6 col-md-12 col-sm-6 col-xs-4 second-stage-item-wrapper-item diagram-item-wrapper">
                     <div class="second-stage-item diagram-item">
-                        <BarChart :title="'Répartition des styles — 30 derniers jours'" :labels="labels" :values="values" :color="'#1b1f24'" :tickColor="'#f6e6e1'" />
+                        <BarChart :title="'Répartition des styles — 30 derniers jours'" :labels="labelsStyles" :values="valuesStyles" :color="'#1b1f24'" :tickColor="'#f6e6e1'" />
                     </div>
                 </div>
-                <div class="col col-xl-6 col-md-12 col-sm-6 col-xs-4 second-stage-item-wrapper-item history-item-wrapper">
+                <div class="col col-xl-6 col-md-12 col-sm-6 col-xs-4 second-stage-item-wrapper-item history-item-wrapper" v-if="historyDA.length > 0">
                     <div class="second-stage-item history-item">
                         <div class="da-wrapper" v-for="value in historyDA" :key="value.id">
                             <div class="imgs-wrapper">
-                                <div class="img-item" v-for="image in value.images" :key="image">
+                                <div class="img-item" v-for="image in value.pictures" :key="image">
                                     <img :src="`/assets/${image}`" alt="image">
                                 </div>
                             </div>
                             <div class="da-item-style">
-                                <p>Style - {{ value.style.join(', ') }}</p>
+                                <p>Style - {{ value.styles.join(', ') }}</p>
                             </div>
                         </div>
                     </div>
+                </div>
+                <div class="second-stage-item history-item-wrapper-void col col-xl-6 col-md-12 col-sm-6 col-xs-4" v-else>
+                    <RouterLink to="/create-da">
+                        <UiButton text="Créer un DA" typeClass="primary" size="lg"/>
+                    </RouterLink>
                 </div>
             </div>
         </div>
@@ -40,9 +45,9 @@
                 <div class="col col-xl-12 col-md-12 col-sm-6 col-xs-4 third-stage-item-wrapper-item">
                     <div class="third-stage-item">
                         <LineChart
-                            :labels="['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche']"
-                            :seriesA="[12, 18, 15, 22, 24, 28, 20]"
-                            :seriesB="[10, 14, 13, 19, 21, 25, 20]"
+                            :labels="labelsActivity"
+                            :seriesA="seriesA"
+                            :seriesB="seriesB"
                             title="Activité — Générations & Favoris / jour (+ moyenne 7 j)"
                             :colorA="'#8f62f3'"
                             :colorB="'#cb93f1'"
@@ -58,10 +63,8 @@ import { onMounted, ref } from 'vue';
 import BarChart from '@/components/BarChart.vue';
 import LineChart from '@/components/LineChart.vue';
 import { getDashboard } from '@/ts/api/dashboard';
-/*
-import { dashboardSchema } from '@/ts/api/validator/dashboard';
-import { useMessageStore } from '@/stores/message';
-import type { AxiosError } from 'axios' */
+import UiButton from '@/components/UiButton.vue';
+import { RouterLink } from 'vue-router';
 
 type BannerStat = {
     title: string;
@@ -69,40 +72,41 @@ type BannerStat = {
     type: string;
 }
 
+type HistoryDA = {
+    id: string;
+    styles: string[];
+    pictures: string[];
+}
+
+type StyleRow = {
+    styleId: string;
+    libelle: string;
+    count: number;
+}
+
 const bannerStats = ref<BannerStat[]>([]);
 
-const historyDA = ref([
-    {
-        id: 1,
-        style: ['Style 1', 'Style 2', 'Style 3'],
-        images: ['image-1.JPG', 'image-2.JPG', 'image-3.JPG'],
-    },
-    {
-        id: 2,
-        style: ['Style 1', 'Style 2', 'Style 3'],
-        images: ['image-1.JPG', 'image-2.JPG', 'image-3.JPG'],
-    },
-    {
-        id: 3,
-        style: ['Style 1', 'Style 2', 'Style 3'],
-        images: ['image-1.JPG', 'image-2.JPG', 'image-3.JPG'],
-    },
-    {
-        id: 4,
-        style: ['Style 1', 'Style 2', 'Style 3'],
-        images: ['image-1.JPG', 'image-2.JPG', 'image-3.JPG'],
-    }
-])
+const historyDA = ref<HistoryDA[]>([]);
 
-const labels = ref([])
-const values = [75, 98, 86, 42, 80]
+const labelsActivity = ref([])
+const seriesA = ref([])
+const seriesB = ref([])
+
+const labelsStyles = ref([])
+const valuesStyles = ref([])
+
 
 const getDashboardData = async ()=> {
     try{
         const data = await getDashboard();
         bannerStats.value = data.dashboard.bannerStat;
         //activity
-        
+        labelsActivity.value = data.dashboard.activity.days;
+        seriesA.value = data.dashboard.activity.generations;
+        seriesB.value = data.dashboard.activity.favorites;
+        historyDA.value = data.dashboard.latest4;
+        labelsStyles.value = data.dashboard.stylesTop5.map((s: StyleRow) => s.libelle);
+        valuesStyles.value = data.dashboard.stylesTop5.map((s: StyleRow) => s.count);
         console.log(data);
     }catch(err){
         console.log(err);
@@ -112,8 +116,6 @@ const getDashboardData = async ()=> {
 onMounted(()=>{
     getDashboardData()
 })
-
-
 
 </script>
 <style scoped>
@@ -173,6 +175,15 @@ h1{
     align-items: stretch;
     gap: calc(20 / 16 * 1rem);
     height: 100%;
+}
+
+.second-stage-wrapper .history-item-wrapper-void{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--primary-grey);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-s);
 }
 
 .second-stage-wrapper .history-item-wrapper .history-item .da-wrapper{

@@ -10,8 +10,8 @@ test('valide un objet complet', () => {
         generations30d: { title: 'Nombre de générations - 30j', value: 6, type: '' },
     },
     stylesTop5: [
-        { style: 'Minimal', count: 2 },
-        { style: 'Vintage', count: 1 },
+        { styleId: 'Minimal', libelle: 'Minimal', count: 2 },
+        { styleId: 'Vintage', libelle: 'Vintage', count: 1 },
     ],
     latest4: [
         { id: 'ad1', styles: ['Minimal'], pictures: ['https://x/y.jpg'] },

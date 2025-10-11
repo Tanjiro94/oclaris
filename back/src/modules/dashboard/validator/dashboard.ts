@@ -24,9 +24,10 @@ export const dashboardSchema = z.object({
         }),
     }),
     stylesTop5: z.array(z.object({
-        style: z.string(),
+        styleId: z.string(),
+        libelle: z.string(),
         count: z.number(),
-    })),
+    })).max(5),
     latest4: z.array(
         z.object({
             id: z.string(),

@@ -13,6 +13,17 @@ export async function loginService(email: string, password: string, res: Respons
     if (!user) {
         throw new AppError('Utilisateur non trouvé', 404, { code: 'USER_NOT_FOUND' , errors: { email: 'Utilisateur non trouvé' } });
     }
+    console.log('[AUTH dbg]', {
+        email,
+        hasUser: !!user,
+        hashLen: user?.password_hash?.length,        // doit = 60
+        hashPrefix: user?.password_hash?.slice(0,4), // '$2b$'
+        plainLen: password.length,                   // longueur REÇUE
+        firstLast: [password.at(0), password.at(-1)] // détecte espace/char imp.
+    });
+    const codepoints = Array.from(password).map(c => c.codePointAt(0));
+    console.log('[AUTH dbg cp]', codepoints);
+
     const isPasswordValid = await compare(password, user.password_hash);
     if (!isPasswordValid) {
         throw new AppError('Mot de passe incorrect', 401, { code: 'INVALID_PASSWORD' , errors: { password: 'Mot de passe incorrect' } });
