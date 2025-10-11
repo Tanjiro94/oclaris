@@ -121,6 +121,22 @@ onMounted(()=>{
     getDashboardData()
 })
 
+const getDashboardData = async ()=> {
+    try{
+        const data = await getDashboard();
+        bannerStats.value = data.dashboard.bannerStat;
+        //activity
+        
+        console.log(data);
+    }catch(err){
+        console.log(err);
+    }
+}
+
+onMounted(()=>{
+    getDashboardData()
+})
+
 
 
 </script>
