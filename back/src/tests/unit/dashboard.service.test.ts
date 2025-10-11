@@ -38,8 +38,11 @@ test('retourne des zéros et tableaux vides quand pas de données', async () => 
     (prisma.ad_style.groupBy as jest.Mock).mockResolvedValueOnce([]);       
     (prisma.style.findMany as jest.Mock).mockResolvedValueOnce([]);         
     (prisma.$queryRaw as jest.Mock)
-    .mockResolvedValueOnce([]) 
-    .mockResolvedValueOnce([]); 
+    .mockResolvedValueOnce([])
+    .mockResolvedValueOnce([])
+    .mockResolvedValueOnce([])
+    .mockResolvedValueOnce([]);
+
 
     const result = await dashboardService(userId);
 
