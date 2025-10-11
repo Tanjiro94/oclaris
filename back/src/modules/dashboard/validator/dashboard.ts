@@ -1,14 +1,33 @@
-import { z } from 'zod';
+import { object, z } from 'zod';
 
 export const dashboardSchema = z.object({
-    successRate30d: z.number(),
-    satisfactionRate30d: z.number(),
-    favorites30d: z.number(),
-    generations30d: z.number(),
+    bannerStat : object({
+        successRate30d: object({
+            title : z.string(),
+            value : z.number(),
+            type : z.string(),
+        }),
+        satisfactionRate30d: object({
+            title : z.string(),
+            value : z.number(),
+            type : z.string(),
+        }),
+        favorites30d: object({
+            title : z.string(),
+            value : z.number(),
+            type : z.string(),
+        }),
+        generations30d: object({
+            title : z.string(),
+            value : z.number(),
+            type : z.string(),
+        }),
+    }),
     stylesTop5: z.array(z.object({
-        style: z.string(),
+        styleId: z.string(),
+        libelle: z.string(),
         count: z.number(),
-    })),
+    })).max(5),
     latest4: z.array(
         z.object({
             id: z.string(),

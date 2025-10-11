@@ -48,32 +48,40 @@ export const dashboardService = async (userId: string) : Promise<DashboardSchema
         pictures: ad.picture_generated.map(p => p.url),
     }));
 
-    // Styles Top 5
+    // Styles Top 5 
+    
+    type StyleRow = { styleId: string; libelle: string; count: number };
 
-    const grouped = await prisma.ad_style.groupBy({
-        by: ['style_id'],
-        where: {
-        art_direction: {
-            created_at: { gte: since },
-            user_id: userId,
-        },
-        },
-        _count: { style_id: true },
-        orderBy: { _count: { style_id: 'desc' } },
-        take: 5,
-    });
-    
-    const styleIds = grouped.map(g => g.style_id);
-    
-    const styles = await prisma.style.findMany({
-        where: { id: { in: styleIds } },
-        select: { id: true, libelle: true },
-    });
-    
-    const stylesTop5 = grouped.map(g => ({
-        style: styles.find(s => s.id === g.style_id)?.libelle ?? g.style_id,
-        count: g._count.style_id,
-    }));
+    // Compter le nombre de DA distincts par style pour l'utilisateur sur les 30j
+    const rows = await prisma.$queryRaw<StyleRow[]>`
+    SELECT
+        s.id AS "styleId",
+        s.libelle,
+        COALESCE(COUNT(DISTINCT ad.id), 0)::int AS "count"
+    FROM "style" s
+    LEFT JOIN "ad_style" as_ ON as_."style_id" = s.id
+    LEFT JOIN "art_direction" ad
+        ON ad.id = as_."art_direction_id"
+    AND ad."user_id" = ${userId}::uuid
+    AND ad."created_at" >= ${since}::timestamptz
+    GROUP BY s.id, s.libelle
+    `;
+
+    let stylesTop5: { styleId: string; libelle: string; count: number }[];
+
+    if (rows.some(r => r.count > 0)) {
+    // il y a de l'usage → TOP 5 par count desc
+    stylesTop5 = [...rows].sort((a, b) => b.count - a.count).slice(0, 5);
+    } else {
+        // aucun usage (ou aucun DA) → 5 styles aléatoires, count = 0
+        const fallback = await prisma.$queryRaw<StyleRow[]>`
+            SELECT s.id AS "styleId", s.libelle, 0::int AS "count"
+            FROM "style" s
+            ORDER BY random()
+            LIMIT 5
+        `;
+        stylesTop5 = fallback;
+    }
 
     // Activity
 
@@ -113,10 +121,12 @@ export const dashboardService = async (userId: string) : Promise<DashboardSchema
 
 
     const result = {
-        successRate30d,
-        satisfactionRate30d,
-        favorites30d: nbFavorites30d,
-        generations30d: nbGenerations30d,
+        bannerStat : {
+            successRate30d : { title : 'Taux de réussite - 30j', value : successRate30d, type: 'percentage'},
+            satisfactionRate30d : { title : 'Taux de satisfaction - 30j', value : satisfactionRate30d, type: 'percentage'},
+            favorites30d: { title : 'Nombre de favoris - 30j', value : nbFavorites30d, type: ''},
+            generations30d: { title : 'Nombre de générations - 30j', value : nbGenerations30d, type: ''},
+        },
         stylesTop5: stylesTop5,
         latest4: latest4, 
         activity: {

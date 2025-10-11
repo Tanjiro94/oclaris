@@ -3,13 +3,15 @@ import { dashboardSchema } from '../../modules/dashboard/validator/dashboard.js'
 describe('dashboardSchema', () => {
 test('valide un objet complet', () => {
     const sample = {
-    successRate30d: 0.5,
-    satisfactionRate30d: 0,
-    favorites30d: 3,
-    generations30d: 6,
+    bannerStat: {
+        successRate30d: { title: 'Taux de réussite - 30j', value: 0.5, type: 'percentage' },
+        satisfactionRate30d: { title: 'Taux de satisfaction - 30j', value: 0, type: 'percentage' },
+        favorites30d: { title: 'Nombre de favoris - 30j', value: 3, type: '' },
+        generations30d: { title: 'Nombre de générations - 30j', value: 6, type: '' },
+    },
     stylesTop5: [
-        { style: 'Minimal', count: 2 },
-        { style: 'Vintage', count: 1 },
+        { styleId: 'Minimal', libelle: 'Minimal', count: 2 },
+        { styleId: 'Vintage', libelle: 'Vintage', count: 1 },
     ],
     latest4: [
         { id: 'ad1', styles: ['Minimal'], pictures: ['https://x/y.jpg'] },
