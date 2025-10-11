@@ -65,10 +65,6 @@ import LineChart from '@/components/LineChart.vue';
 import { getDashboard } from '@/ts/api/dashboard';
 import UiButton from '@/components/UiButton.vue';
 import { RouterLink } from 'vue-router';
-/*
-import { dashboardSchema } from '@/ts/api/validator/dashboard';
-import { useMessageStore } from '@/stores/message';
-import type { AxiosError } from 'axios' */
 
 type BannerStat = {
     title: string;
