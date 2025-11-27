@@ -1,56 +1,96 @@
 <template>
     <div class="input-container">
-        <label v-if="props.label" :for="props.name" :class="props.labelClass">{{ props.label }}<span v-if="props.required" class="required-asterisk"> *</span></label>
-        <input :type="props.type" :disabled="props.disabled" :size="props.size" :loading="props.loading" :id="props.id" :name="props.name" :class="props.className + ' ' + inputSize + ' ' + typeInputClass" :style="props.styleAttr" :placeholder="props.placeholder" :value="props.modelValue" @change="onChange" @blur="onBlur" @focus="onFocus" @keyup="onKeyUp" @keydown="onKeyDown" @keypress="onKeyPress" @input="onInput" autocomplete="off" :required="props.required" />
+        <label v-if="props.label" :for="props.name">{{ props.label }}</label>
+        
+        <select
+            :disabled="props.disabled"
+            :id="props.id"
+            :name="props.name"
+            :class="props.className + ' ' + inputSize + ' ' + typeInputClass"
+            :style="props.styleAttr"
+            :value="props.modelValue"
+            @change="onChange"
+            @blur="onBlur"
+            @focus="onFocus"
+            @keyup="onKeyUp"
+            @keydown="onKeyDown"
+            @keypress="onKeyPress"
+            @input="onInput"
+        >
+            <!-- Option placeholder si tu en veux une -->
+            <option v-if="props.placeholder" disabled value="">
+                {{ props.placeholder }}
+            </option>
+
+            <!-- Options passées en props -->
+            <option
+                v-for="option in props.options"
+                :key="option.value"
+                :value="option.value"
+            >
+                {{ option.label }}
+            </option>
+        </select>
     </div>
 </template>
 
 <script lang="ts" setup>
-import type { InputProps } from '@/ts/Input';
 import { computed, withDefaults } from 'vue';
+import type { InputProps } from '@/ts/Input';
 
-const props = withDefaults(defineProps<InputProps>(), {
+type SelectOption = {
+    label: string;
+    value: string | number;
+};
+
+type SelectProps = InputProps & {
+    options: SelectOption[];
+};
+
+const props = withDefaults(defineProps<SelectProps>(), {
     modelValue: '',
     size: 'md',
-    type: 'text',
     disabled: false,
     loading: false,
     error: false,
     typeInput: 'primary',
-    name: 'input-form',
-    id: 'input-form',
-    labelClass: 'label-primary',
-    required: false,
+    name: 'select-form',
+    id: 'select-form',
+    options: () => [],
 });
 
 const emit = defineEmits<{
-    (e: 'update:modelValue', value: string): void
-    (e: 'change', value: string): void
+    (e: 'update:modelValue', value: string | number): void
+    (e: 'change', value: string | number): void
     (e: 'blur'): void
     (e: 'focus'): void
     (e: 'keyUp'): void
     (e: 'keyDown'): void
     (e: 'keyPress'): void
     (e: 'keyup'): void
-    (e: 'input', value: string): void
+    (e: 'input', value: string | number): void
 }>();
 
 const model = computed({
-    get: () => {
-        return props.modelValue;
-    },
-    set: (value: string) => {
+    get: () => props.modelValue,
+    set: (value: string | number) => {
         emit('update:modelValue', value);
     }
 });
 
+function getTargetValue(event: Event): string {
+    const target = event.target as HTMLSelectElement;
+    return target.value;
+}
+
 function onInput(event: Event) {
-    const value = (event.target as HTMLInputElement).value;
+    const value = getTargetValue(event);
     model.value = value;
+    emit('input', value);
 }
 
 function onChange(event: Event) {
-    const value = (event.target as HTMLInputElement).value;
+    const value = getTargetValue(event);
     emit('change', value);
     props.onChange?.(value);
 }
@@ -110,9 +150,8 @@ const typeInputClass = computed(() => {
     gap: calc(10 / 16 * 1rem);
 }
 
-/* size */
 .input-sm{
-width: calc(200 / 16 * 1rem);
+    width: calc(200 / 16 * 1rem);
 }
 
 .input-md{
@@ -123,14 +162,18 @@ width: calc(200 / 16 * 1rem);
     width: calc(350 / 16 * 1rem);
 }
 
-.input-container input{
+.input-container input,
+.input-container select{
     padding: calc(14 / 16 * 1rem) calc(10 / 16 * 1rem);
     border-radius: var(--border-radius);
-    border: 2px solid transparent;
+    border: none;
     outline: none;
+    appearance: none;
 }
-.input-container input:focus{
-    border-color: var(--primary-color);
+
+.input-container input:focus,
+.input-container select:focus{
+    outline: 2px solid var(--primary-color);
 }
 
 /* type */
@@ -147,27 +190,6 @@ width: calc(200 / 16 * 1rem);
 }
 .input-secondary:hover{
     background-color: var(--secondary-grey-hover);
-}
-
-/* label */
-.label-primary{
-    color: var(--beige-color);
-}
-.label-secondary{
-    color: var(--primary-color);
-}
-.label-tertiary{
-    color: var(--secondary-color);
-}
-.label-accent{
-    color: var(--accent-color);
-}
-.label-success{
-    color: var(--success-color);
-}
-
-.required-asterisk{
-    color: var(--accent-color);
 }
 
 @media (max-width: 400px) {
