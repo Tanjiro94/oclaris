@@ -150,3 +150,6 @@ export type ListGenerationJobsResponseDto = z.infer<
 
 export type DaListItemDto = z.infer<typeof daListItemSchema>;
 export type GetDaListResponseDto = z.infer<typeof getDaListResponseSchema>;
+export type DaDetailDto = DaListItemDto;
+export type AddPlaceDto = AddPlaceToDaDto;
+export type ToggleFavoriteResponseDto = {isFavorite: boolean};
