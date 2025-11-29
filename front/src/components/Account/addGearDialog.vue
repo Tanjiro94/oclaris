@@ -130,11 +130,11 @@ const createGear = async () => {
             brand: form.value.brand.trim(),
             model: form.value.model.trim()
         });
-        console.log('gear créé :', response);
-
+        console.log(response);
         messageStore.success('Équipement ajouté avec succès.');
 
         resetForm();
+        emit('closed');
         dialogCompRef.value?.close();
     } catch (e) {
         console.error(e);

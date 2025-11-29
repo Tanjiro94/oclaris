@@ -107,7 +107,6 @@ const getDashboardData = async ()=> {
         historyDA.value = data.dashboard.latest4;
         labelsStyles.value = data.dashboard.stylesTop5.map((s: StyleRow) => s.libelle);
         valuesStyles.value = data.dashboard.stylesTop5.map((s: StyleRow) => s.count);
-        console.log(data);
     }catch(err){
         console.log(err);
     }

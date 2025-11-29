@@ -5,16 +5,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "cross-env ENVIRONMENT=dev tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "cross-env ENVIRONMENT=prod node dist/index.js",
     "studio": "prisma studio",
     "migrate": "prisma migrate dev",
     "ci:prep": "if [ -f prisma/schema.prisma ]; then npx prisma generate; else echo 'no prisma schema'; fi",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "jest --passWithNoTests",
-    "test:watch": "jest --watch"
+    "test": "cross-env ENVIRONMENT=test jest --passWithNoTests --runInBand",
+    "test:watch": "cross-env ENVIRONMENT=test jest --watch"
   },
   "keywords": [],
   "author": "",
@@ -45,6 +45,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.3.0",
     "@types/supertest": "^6.0.3",
+    "cross-env": "^10.1.0",
     "eslint": "^9.34.0",
     "globals": "^16.3.0",
     "jest": "^29.7.0",

@@ -1,6 +1,6 @@
 <template>
     <div class="input-container">
-        <label v-if="props.label" :for="props.name">{{ props.label }}</label>
+        <label v-if="props.label" :for="props.name">{{ props.label }}<span v-if="props.required" class="required-asterisk"> *</span></label>
         
         <select
             :disabled="props.disabled"
@@ -57,6 +57,7 @@ const props = withDefaults(defineProps<SelectProps>(), {
     name: 'select-form',
     id: 'select-form',
     options: () => [],
+    required: false,
 });
 
 const emit = defineEmits<{
@@ -190,6 +191,10 @@ const typeInputClass = computed(() => {
 }
 .input-secondary:hover{
     background-color: var(--secondary-grey-hover);
+}
+
+.required-asterisk{
+    color: var(--accent-color);
 }
 
 @media (max-width: 400px) {

@@ -28,8 +28,10 @@
             </div>
             <div class="right-container col col-xl-9 col-md-9 col-sm-9 col-xs-9">
                 <div class="right-container-content">
-                    <PersonnalData v-if="activeLink === 'informations-personnelles'" :user="user" />
+                    <PersonnalData v-if="activeLink === 'informations-personnelles' && authStore.user" :user="authStore.user" />
                     <Favorite v-if="activeLink === 'mes-favoris'" />
+                    <HistoryGenerate v-if="activeLink === 'historique-des-generations'" />
+                    <Support v-if="activeLink === 'support'" />
                 </div>
             </div>
         </div>
@@ -37,16 +39,16 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, computed } from 'vue';
-import { logout } from '@/ts/api/auth';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import PersonnalData from '@/components/Account/PersonnalData.vue';
 import { useAuthStore } from '@/stores/auth';
 import Favorite from '@/components/Account/FavoriteView.vue';
+import HistoryGenerate from '@/components/Account/HistoryGenerateView.vue';
+import Support from '@/components/Account/SupportView.vue';
 const router = useRouter();
 const activeLink = ref('informations-personnelles');
 const authStore = useAuthStore();
-const user = computed(() => authStore.user as { id: string; email: string; username: string; createdAt: string; updatedAt: string; });
 const informationsPersonnellesButton = ref<HTMLButtonElement | null>(null);
 const mesFavorisButton = ref<HTMLButtonElement | null>(null);
 const historiqueDesGenerationsButton = ref<HTMLButtonElement | null>(null);
@@ -76,9 +78,9 @@ function onClickedLink(link: string) {
     }
 }
 
-function onClickedLogout() {
-    logout();
-    router.push('/login');
+async function onClickedLogout() {
+    await authStore.logout();
+    await router.push('/');
 }
 </script>
 
@@ -133,6 +135,6 @@ function onClickedLogout() {
     background-color: var(--primary-grey);
     border-radius: var(--border-radius);
     padding: var(--spacing-l);
-    height: 85vh;
+    min-height: 85vh;
 }
 </style>

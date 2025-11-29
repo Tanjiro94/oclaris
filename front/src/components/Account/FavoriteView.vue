@@ -3,83 +3,115 @@
         <div class="favorite-content">
             <h2>Mes favoris</h2>
         </div>
-        <div class="favorite-header">
-            <select name="sort" id="sort">
-                <option value="latest">Latest</option>
-                <option value="oldest">Oldest</option>
-            </select>
-            <select name="filter" id="filter">
-                <option value="all">All</option>
-                <option value="favorites">Favorites</option>
-                <option value="not-favorites">Not Favorites</option>
-            </select>
-        </div>
-        <div class="favorite-list">
-            <div class="favorite-item" v-for="favorite in favorites" :key="favorite.id">
-                <div class="favorite-item-content">
-                    <div class="favorite-item-content-image">
-                        <img :src="favorite.pictures[0]" alt="Favorite Image">
-                    </div>
-                    <div class="favorite-item-content-details">
-                        <div class="favorite-item-content-details-styles">
-                            <p>{{ favorite.styles[0] }}</p>
+
+        <UiHeadAction className="favorite-header">
+            <template #left-content>
+                <select
+                    name="sort"
+                    id="sort"
+                    v-model="sortOrder"
+                    :disabled="favorites.length === 0"
+                >
+                    <option value="latest">Récent</option>
+                    <option value="oldest">Ancien</option>
+                </select>
+            </template>
+
+            <template #right-content>
+                <p>Total ({{ displayedFavorites.length }})</p>
+            </template>
+        </UiHeadAction>
+
+        <div class="favorite-list" v-if="displayedFavorites.length > 0">
+            <RouterLink
+                v-for="favorite in displayedFavorites"
+                :key="favorite.id"
+                :to="`/favorite/${favorite.id}`"
+            >
+                <div class="favorite-item">
+                    <div class="favorite-item-content">
+                        <div class="favorite-item-content-image">
+                            <img
+                                :src="favorite.pictures[0]"
+                                alt="Favorite Image"
+                            >
                         </div>
-                    </div>
-                    <div class="favorite-item-content-actions">
-                        <div class="favorite-item-content-actions-like">
-                            <i class="fa-solid fa-heart"></i>
+
+                        <div class="favorite-item-content-details">
+                            <div class="favorite-item-content-details-styles">
+                                <UiTag
+                                    v-if="favorite.styles[0]"
+                                    :text="favorite.styles[0]"
+                                    typeClass="tertiary"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="favorite-item-content-actions">
+                            <div class="favorite-item-content-actions-like">
+                                <UiTag
+                                    :noText="true"
+                                    typeClass="tertiary"
+                                    icon="fa-solid fa-heart"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </RouterLink>
         </div>
     </div>
 </template>
 
 <script lang="ts" setup>
+import { ref, onMounted, computed } from 'vue';
+import UiTag from '@/components/UiTag.vue';
+import UiHeadAction from '@/components/UiHeadAction.vue';
+import { daApi } from '@/ts/api/da';
+import type { DaListItemDto, GetDaListResponseDto } from '@/ts/api/validator/da';
 
-import {ref} from 'vue';
+const favorites = ref<DaListItemDto[]>([]);
 
-const favorites = ref([
-    {
-        id: '1',
-        pictures: ['public/assets/image-1.JPG', 'public/assets/image-2.JPG', 'public/assets/image-3.JPG'],
-        styles: ['Style 1', 'Style 2', 'Style 3'],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    },
-    {
-        id: '2',
-        pictures: ['public/assets/image-1.JPG', 'public/assets/image-2.JPG', 'public/assets/image-3.JPG'],
-        styles: ['Style 1', 'Style 2', 'Style 3'],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    },
-    {
-        id: '3',
-        pictures: ['public/assets/image-1.JPG', 'public/assets/image-2.JPG', 'public/assets/image-3.JPG'],
-        styles: ['Style 1', 'Style 2', 'Style 3'],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    },
-]);
+const sortOrder = ref<'latest' | 'oldest'>('latest');
+/* const filterMode = ref<'all' | 'favorites' | 'not-favorites'>('all'); */
 
+const displayedFavorites = computed(() => {
+    const list = [...favorites.value];
 
+    /* if (filterMode.value === 'favorites') {
+        list = list.filter((da) => da.isFavorite === true);
+    } else if (filterMode.value === 'not-favorites') {
+        list = list.filter((da) => da.isFavorite === false || da.isFavorite == null);
+    } */
+
+    list.sort((a, b) => {
+        const ta = new Date(a.created_at as string | Date).getTime();
+        const tb = new Date(b.created_at as string | Date).getTime();
+
+        if (sortOrder.value === 'latest') {
+            return tb - ta;
+        } else {
+            return ta - tb; 
+        }
+    });
+
+    return list;
+});
+
+const getFavorites = async () => {
+    const response: GetDaListResponseDto = await daApi.getDaFavorites();
+    favorites.value = response.data;
+};
+
+onMounted(() => {
+    getFavorites();
+});
 </script>
+
 
 <style scoped>
 
 h2{
-    margin-bottom: var(--spacing-m);
-}
-
-.favorite-header{
-    background-color: var(--secondary-grey);
-    padding: var(--spacing-s);
-    border-radius: var(--border-radius);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-s);
     margin-bottom: var(--spacing-m);
 }
 
@@ -108,6 +140,7 @@ h2{
     background-color: var(--secondary-grey);
     padding: var(--spacing-s);
     border-radius: var(--border-radius);
+    cursor: pointer;
 }
 
 .favorite-item-content{
@@ -139,34 +172,7 @@ h2{
 
 .favorite-item-content-details-styles{
     position: relative;
-    border-radius: 100px;
-    padding: var(--spacing-s) var(--spacing-m);
-    background:
-    radial-gradient(circle at 20% 0%, rgba(255,255,255,0.25) 0, transparent 50%),
-    linear-gradient(135deg, rgba(0,0,0,0.5), rgba(0,0,0,0.2));
-    color: var(--beige-color);
-    backdrop-filter: blur(10px) saturate(160%);
-    -webkit-backdrop-filter: blur(10px) saturate(160%);
-    box-shadow:
-    0 18px 35px rgba(0,0,0,0.7),
-    0 0 0 1px rgba(255,255,255,0.05) inset;
-    border: none;
-    outline: none;
 }
-.favorite-item-content-details-styles::before{
-    content: "";
-    position: absolute;
-    inset: 1px;
-    border-radius: inherit;
-    background: linear-gradient(
-        120deg,
-        rgba(255,255,255,0.25),
-        rgba(255,255,255,0) 25%
-    );
-    opacity: 0.7;
-    pointer-events: none;
-}
-
 
 .favorite-item-content-details .favorite-item-content-details-styles p{
     font-size: var(--small-font-size);
@@ -181,34 +187,37 @@ h2{
 
 .favorite-item-content-actions .favorite-item-content-actions-like {
     position: relative;
-    border-radius: 100px;
-    padding: var(--spacing-xs);
-    background:
-    radial-gradient(circle at 20% 0%, rgba(255,255,255,0.25) 0, transparent 50%),
-    linear-gradient(135deg, rgba(0,0,0,0.5), rgba(0,0,0,0.2));
-    color: var(--beige-color);
-    backdrop-filter: blur(10px) saturate(160%);
-    -webkit-backdrop-filter: blur(10px) saturate(160%);
-    box-shadow:
-    0 18px 35px rgba(0,0,0,0.7),
-    0 0 0 1px rgba(255,255,255,0.05) inset;
-    border: none;
-    outline: none;
-}
-.favorite-item-content-actions-like::before{
-    content: "";
-    position: absolute;
-    inset: 1px;
-    border-radius: inherit;
-    background: linear-gradient(
-        120deg,
-        rgba(255,255,255,0.25),
-        rgba(255,255,255,0) 25%
-    );
-    opacity: 0.7;
-    pointer-events: none;
 }
 .favorite-item-content-actions .favorite-item-content-actions-like i{
     color: red;
+}
+
+@media (max-width: 992px) {
+    .favorite-list{
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .favorite-item{
+        grid-column: span 1;
+    }
+    .favorite-item-content-image{
+        height: calc(250 / 16 * 1rem);
+    }
+}
+
+@media (max-width: 768px) {
+    .favorite-item-content-image{
+        height: calc(200 / 16 * 1rem);
+    }
+}
+@media (max-width: 576px) {
+    .favorite-list{
+        grid-template-columns: repeat(1, 1fr);
+    }
+    .favorite-item{
+        grid-column: span 1;
+    }
+    .favorite-item-content-image{
+        height: calc(150 / 16 * 1rem);
+    }
 }
 </style>

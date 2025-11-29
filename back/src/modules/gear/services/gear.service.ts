@@ -43,6 +43,6 @@ export const updateGearService = async (data: UpdateGearSchema, userId: string) 
 };
 
 export const deleteGearService = async (id: string, userId: string) => {
-    const res = await prisma.gear.deleteMany({ where: { id, user_id: userId } });
-    return { success: res.count > 0 };
+    await prisma.gear.deleteMany({ where: { id, user_id: userId } });
+    return { id };
 };

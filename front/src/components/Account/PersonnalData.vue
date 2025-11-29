@@ -6,6 +6,7 @@
                 <div class="personnal-data-item-content-wrapper">
                     <div class="personnal-data-item-content-item">
                         <UiInput
+                            v-if="user"
                             label="Nom d'utilisateur"
                             type="text"
                             size="lg"
@@ -18,6 +19,7 @@
                     </div>
                     <div class="personnal-data-item-content-item">
                         <UiInput
+                            v-if="user"
                             label="Email"
                             type="email"
                             size="lg"
@@ -30,7 +32,7 @@
                     </div>
                 </div>
                 <div class="reset-password-wrapper">
-                    <UiButton text="Modifier mon mot de passe" typeClass="accent" type="button" />
+                    <UiButton text="Modifier mon mot de passe" typeClass="accent" type="button" @click="goToResetPassword" />
                 </div>
             </div>
 
@@ -106,15 +108,23 @@ import type { GearItem } from '@/ts/api/validator/gear.js';
 import AddGearDialog from './addGearDialog.vue';
 import { useMessageStore } from '@/stores/message';
 import DialogComp from '@/components/UiDialog.vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+type UserLite = {
+    id: string;
+    email: string;
+    username: string;
+};
+
+
+const goToResetPassword = () => {
+    router.push('/reset-password');
+};
 
 const props = defineProps<{
-    user: {
-        id: string;
-        email: string;
-        username: string;
-        createdAt: string;
-        updatedAt: string;
-    };
+    user: UserLite | null;
 }>();
 
 const user = computed(() => props.user);

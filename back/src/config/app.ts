@@ -7,6 +7,8 @@ import router from '../routes/auth.js';
 import { errorHandler } from './ErrorHandler.js';
 import dashboardRoutes from '../routes/dashboard.js';
 import gearRoutes from '../routes/gear.js';
+import daRoutes from '../routes/da.js';
+import { supportTicketRouter } from '../routes/support.js';
 
 const app = express();
 
@@ -30,6 +32,10 @@ app.use('/api', router);
 app.use('/api', dashboardRoutes);
 
 app.use('/api', gearRoutes);
+
+app.use('/api', daRoutes);
+
+app.use('/api', supportTicketRouter);
 
 app.use(helmet());
 

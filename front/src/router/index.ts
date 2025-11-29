@@ -4,7 +4,7 @@ import Login from '@/pages/LoginView.vue'
 import Register from '@/pages/RegisterView.vue'
 import DashboardView from '@/pages/DashboardView.vue'
 import AccountView from '@/pages/AccountView.vue'
-
+import ResetPasswordView from '@/pages/ResetPasswordView.vue'
 
 
 const router = createRouter({
@@ -41,6 +41,10 @@ const router = createRouter({
         requiresAuth: true,
         guest: false,
       },
+    },
+    {
+      path: '/reset-password',
+      component: ResetPasswordView,
     },
   ],
 })
