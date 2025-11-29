@@ -54,6 +54,11 @@ const sizeClass = computed(() => {
     transition: all 0.6s ease-in-out;
 }
 
+.button:disabled{
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* size */
 .button-sm{
     min-width: 100px;

@@ -1,6 +1,7 @@
 export type type = 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search' | 'date' | 'time' | 'datetime-local' | 'month' | 'week';
 export type InputSize = 'sm' | 'md' | 'lg';
 export type InputType = 'primary' | 'secondary';
+export type InputLabelClass = 'label-primary' | 'label-secondary' | 'label-tertiary' | 'label-accent' | 'label-success';
 
 export type InputProps = {
     modelValue?: string;
@@ -18,6 +19,8 @@ export type InputProps = {
     styleAttr?: string;
     autoComplete?: string;
     error?: boolean;
+    labelClass?: InputLabelClass;
+    required?: boolean;
 
     onChange?: (value: string) => void;
     onBlur?: () => void;

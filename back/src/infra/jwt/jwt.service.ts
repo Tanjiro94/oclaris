@@ -8,7 +8,7 @@ export type JwtPayload = {
 
 
 export const generateJwt = (userId: string, username: string) => {
-    return jwt.sign({ userId, username }, env.JWT_SECRET, { expiresIn: '1h' });
+    return jwt.sign({ userId, username }, env.JWT_SECRET, { expiresIn: '24h' });
 };
 
 export const verifyJwt = (token: string) => {
