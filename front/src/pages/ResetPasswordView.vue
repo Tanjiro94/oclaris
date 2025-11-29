@@ -1,7 +1,7 @@
 <template>
     <div
     class="register-page"
-    :class="{ 'register-page--guest': !isLoggedIn }"
+    :class="{ 'register-page--guest': isGuestMode }"
     >
     <div class="logo-mobile-wrapper">
         <img src="/assets/logo-black.svg" alt="logo" class="logo-mobile-fixed" />
@@ -19,23 +19,15 @@
         </div>
 
         <div class="steps-container">
-            <div
-            v-for="s in steps"
-            :key="s.id"
-            class="step-item"
-            :class="{
-                active: step === s.id,
-                done: step > s.id,
-            }"
-            >
-            <div class="step-badge">
-                <span v-if="step > s.id">✓</span>
-                <span v-else>{{ s.id }}</span>
-            </div>
-            <div class="step-texts">
-                <div class="step-title">{{ s.title }}</div>
-                <div class="step-caption">{{ s.caption }}</div>
-            </div>
+            <div v-for="s in steps" :key="s.id" class="step-item" :class="{ active: !success && displayStep === s.id, done: displayStep > s.id}">
+                <div class="step-badge">
+                    <span v-if="displayStep > s.id">✓</span>
+                    <span v-else>{{ s.id }}</span>
+                </div>
+                <div class="step-texts">
+                    <div class="step-title">{{ s.title }}</div>
+                    <div class="step-caption">{{ s.caption }}</div>
+                </div>
             </div>
         </div>
 
@@ -48,7 +40,6 @@
             {{ serverErrors }}
             </p>
 
-            <!-- ÉTAPE 1 : EMAIL -->
             <template v-if="step === 1">
             <div class="form-group">
                 <UiInput
@@ -63,172 +54,72 @@
             </div>
             </template>
 
-            <!-- ÉTAPE 2 : EMAIL + CODE -->
             <template v-else-if="step === 2">
             <div class="form-group">
-                <UiInput
-                label="Email"
-                type="email"
-                placeholder="Email"
-                size="lg"
-                v-model="form.email"
-                name="email"
-                id="email"
-                />
+                <UiInput label="Email" type="email" placeholder="Email" size="lg" v-model="form.email" name="email" id="email"/>
             </div>
 
             <div class="form-group">
-                <UiInput
-                label="Code de réinitialisation"
-                type="text"
-                placeholder="Code à 6 caractères"
-                size="lg"
-                v-model="form.code"
-                name="code"
-                id="code"
-                />
-                <p class="hint-text">
-                Regarde dans ta boîte mail, tu as reçu un code de la part
-                d’Oclaris.
-                </p>
+                <UiInput label="Code de réinitialisation" type="text" placeholder="Code à 6 caractères" size="lg" v-model="form.code" name="code" id="code"/>
+                <p class="hint-text"> Regarde dans ta boîte mail, tu as reçu un code de la part d’Oclaris.</p>
             </div>
             </template>
 
-            <!-- ÉTAPE 3 : EMAIL + CODE + NOUVEAU PASSWORD -->
             <template v-else>
             <div class="form-group">
-                <UiInput
-                label="Email"
-                type="email"
-                placeholder="Email"
-                size="lg"
-                v-model="form.email"
-                name="email"
-                id="email"
-                />
+                <UiInput label="Email" type="email" placeholder="Email" size="lg" v-model="form.email" name="email" id="email"/>
             </div>
 
             <div class="form-group">
-                <UiInput
-                label="Code de réinitialisation"
-                type="text"
-                placeholder="Code à 6 caractères"
-                size="lg"
-                v-model="form.code"
-                name="code"
-                id="code"
-                />
+                <UiInput label="Code de réinitialisation" type="text" placeholder="Code à 6 caractères" size="lg" v-model="form.code" name="code" id="code"/>
             </div>
 
             <div class="form-group password-group">
-                <UiInput
-                label="Nouveau mot de passe"
-                type="password"
-                placeholder="Mot de passe"
-                size="lg"
-                v-model="form.password"
-                name="password"
-                id="password"
-                />
+                <UiInput label="Nouveau mot de passe" type="password" placeholder="Mot de passe" size="lg" v-model="form.password" name="password" id="password"/>
                 <div class="rules-container">
-                <div
-                    v-for="i in 4"
-                    :key="i"
-                    class="rules-rect"
-                    :class="{ active: i <= passedCount }"
-                >
-                    <div class="inner-rect"></div>
-                </div>
+                    <div v-for="i in 4" :key="i" class="rules-rect" :class="{ active: i <= passedCount }">
+                        <div class="inner-rect"></div>
+                    </div>
                 </div>
                 <ul class="rules-list">
-                <li class="rules-list-item" :class="{ active: checks[0] }">
-                    12 caractères
-                </li>
-                <li class="rules-list-item" :class="{ active: checks[1] }">
-                    1 majuscule
-                </li>
-                <li class="rules-list-item" :class="{ active: checks[2] }">
-                    1 chiffre
-                </li>
-                <li class="rules-list-item" :class="{ active: checks[3] }">
-                    1 caractère spécial
-                </li>
+                    <li class="rules-list-item" :class="{ active: checks[0] }">12 caractères</li>
+                    <li class="rules-list-item" :class="{ active: checks[1] }">1 majuscule</li>
+                    <li class="rules-list-item" :class="{ active: checks[2] }">1 chiffre</li>
+                    <li class="rules-list-item" :class="{ active: checks[3] }">1 caractère spécial</li>
                 </ul>
             </div>
 
             <div class="form-group">
-                <UiInput
-                label="Confirmation du mot de passe"
-                type="password"
-                placeholder="Confirmation du mot de passe"
-                size="lg"
-                v-model="form.passwordConfirm"
-                name="passwordConfirm"
-                id="passwordConfirm"
-                />
+                <UiInput label="Confirmation du mot de passe" type="password" placeholder="Confirmation du mot de passe" size="lg" v-model="form.passwordConfirm" name="passwordConfirm" id="passwordConfirm"/>
             </div>
             </template>
 
             <div class="buttons-row">
-            <UiButton
-                v-if="step > 1"
-                text="Retour"
-                typeClass="secondary"
-                type="button"
-                :loading="false"
-                :disabled="loading"
-                @click="onBack"
-            />
-            <UiButton
-                :text="submitLabel"
-                typeClass="primary"
-                type="submit"
-                :loading="loading"
-                :disabled="isSubmitDisabled"
-            />
+                <UiButton v-if="step > 1" text="Retour" typeClass="secondary" type="button" :loading="false" :disabled="loading" @click="onBack"/>
+                <UiButton :text="submitLabel" typeClass="primary" type="submit" :loading="loading" :disabled="isSubmitDisabled"/>
             </div>
         </form>
 
-        <!-- SUCCESS -->
         <div v-else class="success-block">
-            <h2>Mot de passe mis à jour ✅</h2>
-            <p v-if="isLoggedIn">
-            Ton mot de passe a été mis à jour, tu peux continuer à utiliser
-            Oclaris.
-            </p>
-            <p v-else>
-            Tu peux maintenant te reconnecter avec ton nouveau mot de passe.
-            </p>
+            <h2>Mot de passe mis à jour !</h2>
+            <p v-if="isLoggedIn">Ton mot de passe a été mis à jour, tu peux continuer à utiliser Oclaris.</p>
+            <p v-else>Tu peux maintenant te reconnecter avec ton nouveau mot de passe.</p>
 
-            <UiButton
-            :text="isLoggedIn ? 'Retour à l’accueil' : 'Retour à la connexion'"
-            typeClass="primary"
-            type="button"
-            :loading="false"
-            :disabled="false"
-            @click="isLoggedIn ? goToHome() : goToLogin()"
-            />
+            <UiButton :text="isLoggedIn ? 'Retour à l’accueil' : 'Retour à la connexion'" typeClass="primary" type="button" :loading="false" :disabled="false" @click="isLoggedIn ? goToHome() : goToLogin()"/>
         </div>
 
-        <!-- LIEN BAS DE PAGE -->
-        <p v-if="!success">
+        <p v-if="!success && isAuthReady">
             <template v-if="isLoggedIn">
-            Tu veux revenir sur ton espace ?
-            <a href="#" class="register-link" @click.prevent="goToHome">
-                Retour à l’accueil
-            </a>
+                Tu veux revenir sur ton espace ?
+                <a href="#" class="register-link" @click.prevent="goToPreviousPage">Retour en arrière</a>
             </template>
+
             <template v-else>
-            Tu te souviens de ton mot de passe ?
-            <a
-                href="/"
-                class="register-link"
-                @click.prevent="goToLogin"
-            >
-                Retour à la connexion
-            </a>
+                Tu te souviens de ton mot de passe ?
+                <a href="/" class="register-link" @click.prevent="goToLogin">Retour à la connexion</a>
             </template>
         </p>
+
         </div>
     </div>
     </div>
@@ -237,23 +128,13 @@
 <script lang="ts" setup>
 import UiInput from '@/components/UiInput.vue';
 import UiButton from '@/components/UiButton.vue';
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMessageStore } from '@/stores/message';
 import { useAuthStore } from '@/stores/auth';
 import type { AxiosError } from 'axios';
-
-import {
-    requestPasswordReset,
-    verifyPasswordResetCode,
-    confirmPasswordReset,
-} from '@/ts/api/passwordReset';
-
-import {
-    requestPasswordResetSchema,
-    verifyPasswordResetCodeSchema,
-    confirmPasswordResetSchema,
-} from '@/ts/api/validator/passwordReset';
+import { requestPasswordReset, verifyPasswordResetCode, confirmPasswordReset } from '@/ts/api/passwordReset';
+import { requestPasswordResetSchema, verifyPasswordResetCodeSchema, confirmPasswordResetSchema } from '@/ts/api/validator/passwordReset';
 
 type ApiErrorPayload = {
     message: string;
@@ -265,7 +146,15 @@ const router = useRouter();
 const messageStore = useMessageStore();
 const authStore = useAuthStore();
 
-const isLoggedIn = computed(() => !!authStore.user);
+const authReady = ref(false);
+const isLoggedIn = ref(false);
+
+const isAuthReady = computed(() => authReady.value);
+const isGuestMode = computed(() => authReady.value && !isLoggedIn.value);
+
+const goToPreviousPage = () => {
+    router.back();
+};
 
 const step = ref<1 | 2 | 3>(1);
 const steps = [
@@ -412,6 +301,10 @@ const onSubmit = async () => {
     }
 };
 
+const displayStep = computed(() => {
+    return success.value ? 4 : step.value;
+});
+
 const onBack = () => {
     if (step.value > 1 && !success.value) {
     step.value = (step.value - 1) as 1 | 2 | 3;
@@ -419,8 +312,19 @@ const onBack = () => {
     }
 };
 
+onMounted(async () => {
+    try {
+        if (!authStore.hydrated) {
+        await authStore.hydrate();
+        }
+        isLoggedIn.value = authStore.isAuthenticated;
+    } finally {
+        authReady.value = true;
+    }
+});
+
 const goToHome = () => {
-    router.push('/app'); // adapte si c'est /dashboard ou autre
+    router.push('/dashboard');
 };
 
 const goToLogin = () => {
@@ -435,12 +339,6 @@ const goToLogin = () => {
     align-items: center;
     justify-content: center;
     height: 100dvh;
-}
-
-/* Mode invité : tu pourras ajuster si ton layout ajoute un margin-top */
-.register-page--guest {
-    /* exemple si besoin : */
-    /* margin-top: 0; */
 }
 
 .logo-mobile-wrapper {

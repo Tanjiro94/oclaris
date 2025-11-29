@@ -12,7 +12,7 @@
                                 Mes favoris
                             </button>
                             <button class="link-account-button" ref="historiqueDesGenerationsButton" @click="onClickedLink('historique-des-generations')">
-                                Historique des générations
+                                Historique
                             </button>
                             <button class="link-account-button" ref="supportButton" @click="onClickedLink('support')">
                                 Support

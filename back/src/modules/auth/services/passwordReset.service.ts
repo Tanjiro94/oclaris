@@ -1,5 +1,6 @@
 import prisma from '../../../infra/db/prismaClient.js';
 import bcrypt from 'bcryptjs';
+import { sendPasswordResetEmail } from '../../../infra/mail/resetPasswordMailer.js';
 
 const RESET_CODE_EXP_MINUTES = 15;
 
@@ -22,36 +23,37 @@ function generateResetCode(length = 6): string {
 
 
 export async function createPasswordResetToken(email: string): Promise<void> {
-const user = await prisma.user.findUnique({
-    where: { email },
-});
+    const user = await prisma.user.findUnique({
+        where: { email },
+    });
 
-if (!user) {
-    return;
-}
+    if (!user) {
+        return;
+    }
 
-const code = generateResetCode();
-const expiresAt = new Date(Date.now() + RESET_CODE_EXP_MINUTES * 60 * 1000);
+    const code = generateResetCode();
+    const expiresAt = new Date(Date.now() + RESET_CODE_EXP_MINUTES * 60 * 1000);
 
-await prisma.password_reset_token.updateMany({
-    where: {
-    user_id: user.id,
-    used_at: null,
-    },
-    data: {
-    used_at: new Date(),
-    },
-});
+    await prisma.password_reset_token.updateMany({
+        where: {
+        user_id: user.id,
+        used_at: null,
+        },
+        data: {
+        used_at: new Date(),
+        },
+    });
 
-await prisma.password_reset_token.create({
-    data: {
-    user_id: user.id,
-    code,
-    expires_at: expiresAt,
-    },
-});
+    await prisma.password_reset_token.create({
+        data: {
+        user_id: user.id,
+        code,
+        expires_at: expiresAt,
+        },
+    });
 
-console.log('[PWD RESET] Code envoyé pour', email, '=>', code);
+    await sendPasswordResetEmail(email, code);
+    console.log('[PWD RESET] Code envoyé pour', email, '=>', code);
 }
 
 async function findValidToken(userId: string, code: string) {
