@@ -26,6 +26,7 @@ body {
   --primary-color: #8f62f3;
   --primary-hover: #cb93f1;
   --secondary-color: #271273;
+  --secondary-hover: #341a80;
   --accent-color: #f14405;
   --accent-hover: #fd5417;
   --black-color: #0d0d0d;
@@ -108,6 +109,20 @@ label {
 a,
 span {
   font-size: var(--body-font-size);
+}
+
+select {
+  border: none;
+  outline: none;
+  background-color: var(--primary-grey);
+  color: var(--beige-color);
+  padding: var(--spacing-s) var(--spacing-m);
+  border-radius: 100px;
+  font-size: var(--small-font-size);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
 }
 
 .container {

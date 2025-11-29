@@ -8,30 +8,60 @@ import { env } from '../../../config/env.js';
 
 export const registerService = async (data: RegisterSchema) => {
     const { email, password, username } = data;
+
     const emailExists = await prisma.user.findUnique({
         where: { email },
     });
     if (emailExists) {
-        throw new AppError('Email déjà utilisé', 400, { code: 'EMAIL_TAKEN' , errors: { email: 'Email déjà utilisé' } });
+        throw new AppError('Email déjà utilisé', 400, {
+            code: 'EMAIL_TAKEN',
+            errors: { email: 'Email déjà utilisé' },
+        });
     }
+
     const usernameExists = await prisma.user.findUnique({
         where: { username },
     });
     if (usernameExists) {
-        throw new AppError('Username déjà utilisé', 400, { code: 'USERNAME_TAKEN' , errors: { username: 'Username déjà utilisé' } });
+        throw new AppError('Username déjà utilisé', 400, {
+            code: 'USERNAME_TAKEN',
+            errors: { username: 'Username déjà utilisé' },
+        });
     }
+
     const hashedPassword = await hash(password);
-    
+
     const user = await prisma.user.create({
         data: { email, password_hash: hashedPassword, username },
         select: { id: true, email: true, username: true, created_at: true },
     });
 
-    await invalidateVerificationToken(user.id);
-    const token = await createVerificationToken(user.id);
-    const url = `${env.API_URL}/auth/verify?token=${token.token}&email=${encodeURIComponent(user.email)}`;
+    let tokenData: { token: string; expiresAt: Date } | null = null;
 
-    await sendEmail(email, 'Verifier votre email', `Cliquez <a href="${url}">ici</a> pour vérifier votre email. Le lien expirera dans 24 heures.`);
+    try {
+        await invalidateVerificationToken(user.id);
+        tokenData = await createVerificationToken(user.id);
+    } catch (err) {
+        console.error('[REGISTER] Erreur lors de la création du token de vérification', err);
+    }
+
+    if (tokenData && tokenData.token) {
+        const url = `${env.API_URL}/auth/verify?token=${tokenData.token}&email=${encodeURIComponent(
+            user.email,
+        )}`;
+
+        await sendEmail(
+            email,
+            'Verifier votre email',
+            `Cliquez <a href="${url}">ici</a> pour vérifier votre email. Le lien expirera dans 24 heures.`,
+        );
+    } else {
+        await sendEmail(
+            email,
+            'Compte créé',
+            `Votre compte a bien été créé. (Le lien de vérification est temporairement indisponible.)`,
+        );
+    }
 
     return {
         id: user.id,

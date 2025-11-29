@@ -26,9 +26,9 @@ import AppMessage from '@/components/AppMessage.vue';
     </div>
   </div>
 
-<Header v-if="route.path !== '/' && route.path !== '/register'" />
+<Header v-if="route.path !== '/' && route.path !== '/register' && route.path !== '/reset-password'" />
 
-<main :class="route.path === '/' || route.path === '/register' ? 'no-padding' : 'main'">
+<main :class="route.path === '/' || route.path === '/register' || route.path === '/reset-password' ? 'no-padding' : 'main'">
   <router-view></router-view>
 </main>
 <AppMessage />

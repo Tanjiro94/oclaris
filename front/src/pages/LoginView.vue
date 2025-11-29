@@ -19,7 +19,7 @@
                     <div class="form-group">
                     <Input label="Mot de passe" type="password" placeholder="Mot de passe" size="lg" v-model="form.password" name="password" id="password" />
                     </div>
-                    <p><a href="/forgot-password" class="forgot-password-link">Mot de passe oublié ?</a></p>
+                    <p><a href="/reset-password" class="forgot-password-link">Mot de passe oublié ?</a></p>
                     <Button text="Se connecter" typeClass="primary" type="submit" :loading="loading" />
                 </form>
                 <p>Pas de compte ? <a href="/register" class="register-link">Inscris toi maintenant !</a></p>
