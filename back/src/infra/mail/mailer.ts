@@ -5,6 +5,9 @@ const resend = new Resend(env.RESEND_API_KEY);
 const from = /* env.MAIL_FROM ||  */'onboarding@resend.dev';
 
 export const sendEmail = async (to: string, subject: string, html: string) => {
+    if(env.ENVIRONMENT === 'test') {
+        return;
+    }
     const result = await resend.emails.send({
         from,
         to,

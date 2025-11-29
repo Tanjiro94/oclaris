@@ -1,7 +1,7 @@
 <template>
     <div class="input-container">
-        <label v-if="props.label" :for="props.name">{{ props.label }}</label>
-        <input :type="props.type" :disabled="props.disabled" :size="props.size" :loading="props.loading" :id="props.id" :name="props.name" :class="props.className + ' ' + inputSize + ' ' + typeInputClass" :style="props.styleAttr" :placeholder="props.placeholder" :value="props.modelValue" @change="onChange" @blur="onBlur" @focus="onFocus" @keyup="onKeyUp" @keydown="onKeyDown" @keypress="onKeyPress" @input="onInput" autocomplete="off" />
+        <label v-if="props.label" :for="props.name" :class="props.labelClass">{{ props.label }}<span v-if="props.required" class="required-asterisk"> *</span></label>
+        <input :type="props.type" :disabled="props.disabled" :size="props.size" :loading="props.loading" :id="props.id" :name="props.name" :class="props.className + ' ' + inputSize + ' ' + typeInputClass" :style="props.styleAttr" :placeholder="props.placeholder" :value="props.modelValue" @change="onChange" @blur="onBlur" @focus="onFocus" @keyup="onKeyUp" @keydown="onKeyDown" @keypress="onKeyPress" @input="onInput" autocomplete="off" :required="props.required" />
     </div>
 </template>
 
@@ -19,6 +19,8 @@ const props = withDefaults(defineProps<InputProps>(), {
     typeInput: 'primary',
     name: 'input-form',
     id: 'input-form',
+    labelClass: 'label-primary',
+    required: false,
 });
 
 const emit = defineEmits<{
@@ -124,11 +126,11 @@ width: calc(200 / 16 * 1rem);
 .input-container input{
     padding: calc(14 / 16 * 1rem) calc(10 / 16 * 1rem);
     border-radius: var(--border-radius);
-    border: none;
+    border: 2px solid transparent;
     outline: none;
 }
 .input-container input:focus{
-    outline: 2px solid var(--primary-color);
+    border-color: var(--primary-color);
 }
 
 /* type */
@@ -145,6 +147,27 @@ width: calc(200 / 16 * 1rem);
 }
 .input-secondary:hover{
     background-color: var(--secondary-grey-hover);
+}
+
+/* label */
+.label-primary{
+    color: var(--beige-color);
+}
+.label-secondary{
+    color: var(--primary-color);
+}
+.label-tertiary{
+    color: var(--secondary-color);
+}
+.label-accent{
+    color: var(--accent-color);
+}
+.label-success{
+    color: var(--success-color);
+}
+
+.required-asterisk{
+    color: var(--accent-color);
 }
 
 @media (max-width: 400px) {

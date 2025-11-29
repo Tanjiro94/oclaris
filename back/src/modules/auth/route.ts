@@ -4,6 +4,7 @@ import { loginController } from './controllers/login.controller.js';
 import { meController } from './controllers/me.controller.js';
 import { requireAuth } from '../../middlewares/requireAuth.js';
 import { logoutController } from './controllers/logout.controller.js';
+import { requestPasswordResetController, verifyPasswordResetCodeController, resetPasswordController } from './controllers/passwordReset.controller.js';
 
 const router = Router();
 
@@ -11,5 +12,9 @@ router.post('/register', registerController);
 router.post('/login', loginController);
 router.get('/me', requireAuth, meController);
 router.post('/logout', logoutController);
+
+router.post('/password-reset/request', requestPasswordResetController);
+router.post('/password-reset/verify', verifyPasswordResetCodeController);
+router.post('/password-reset/confirm', resetPasswordController);
 
 export default router;

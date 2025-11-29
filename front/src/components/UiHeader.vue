@@ -28,7 +28,7 @@
                     </RouterLink>
                 </li>
                 <li :class="{ 'active': $route.path === '/account' }">
-                    <RouterLink to="/">
+                    <RouterLink to="/account">
                         <i class="fa-solid fa-user"></i>
                         <span>Compte</span>
                     </RouterLink>

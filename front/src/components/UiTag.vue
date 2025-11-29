@@ -1,18 +1,24 @@
 <template>
     <div class="tag-container" :class="props.className + ' ' + typeClass">
-        <p>{{ props.text }}</p>
+        <i :class="props.icon" v-if="props.icon"></i>
+        <p v-if="!props.noText && props.text">{{ props.text }}</p>
     </div>
 </template>
 
 <script lang="ts" setup>
 import { computed, defineProps, withDefaults } from 'vue';
 const props = withDefaults(defineProps<{
-    text: string;
+    text?: string;
     className?: string;
     typeClass?: string;
+    icon?: string;
+    noText?: boolean;
 }>(), {
+    text: '',
     className: '',
     typeClass: 'primary',
+    icon: '',
+    noText: false,
 });
 
 
@@ -44,6 +50,9 @@ const typeClass = computed(() => {
     cursor: pointer;
     transition: all 0.6s ease-in-out;
     width: fit-content;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
 }
 .tag-container p{
     font-size: var(--small-font-size);
