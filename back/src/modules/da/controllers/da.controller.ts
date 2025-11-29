@@ -96,7 +96,7 @@ export async function listFavoriteDasController(req: Request, res: Response, nex
         if (!userId) throw new AppError('Non autorisé', 401);
 
         listFavoriteDasSchema.parse(req.query);
-        const result = await listFavoriteArtDirections(userId, {});
+        const result = await listFavoriteArtDirections(userId);
 
         res.status(200).json(result);
     } catch (e) {
