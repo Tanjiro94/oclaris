@@ -58,6 +58,10 @@ const typeClass = computed(() => {
     font-size: var(--small-font-size);
 }
 
+.tag-container i{
+    font-size: var(--small-font-size);
+}
+
 /* primary */
 .tag-primary{
     background-color: var(--primary-color);

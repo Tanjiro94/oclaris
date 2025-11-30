@@ -5,6 +5,8 @@ import Register from '@/pages/RegisterView.vue'
 import DashboardView from '@/pages/DashboardView.vue'
 import AccountView from '@/pages/AccountView.vue'
 import ResetPasswordView from '@/pages/ResetPasswordView.vue'
+import ArtDirectionView from '@/pages/ArtDirectionView.vue'
+import ArtDirectionDeteilView from '@/pages/ArtDirectionDeteilView.vue'
 
 
 const router = createRouter({
@@ -25,6 +27,23 @@ const router = createRouter({
         requiresAuth: false,
         guest: true,
       },
+    },
+    {
+      path: '/create-da',
+      component: ArtDirectionView,
+      meta: {
+        requiresAuth: true,
+        guest: false,
+      },
+    },
+    {
+      path: '/art-directions/:id',
+      name: 'art-direction-detail',
+      component: ArtDirectionDeteilView,
+      meta: {
+        requiresAuth: true,
+        guest: false,
+      }
     },
     {
       path: '/dashboard',

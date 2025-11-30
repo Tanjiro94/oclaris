@@ -1,7 +1,7 @@
 <template>
     <div class="textarea-container">
         <label v-if="props.label" :for="props.name" :class="props.labelClass">{{ props.label }}<span v-if="props.required" class="required-asterisk"> *</span></label>
-        <textarea :disabled="props.disabled" :size="props.size" :loading="props.loading" :id="props.id" :name="props.name" :class="props.className + ' ' + inputSize + ' ' + typeInputClass" :style="props.styleAttr" :placeholder="props.placeholder" :value="props.modelValue" @change="onChange" @blur="onBlur" @focus="onFocus" @keyup="onKeyUp" @keydown="onKeyDown" @keypress="onKeyPress" @input="onInput" autocomplete="off" :required="props.required" ></textarea>
+        <textarea :disabled="props.disabled" :size="props.size" :loading="props.loading" :id="props.id" :name="props.name" :class="props.className + ' ' + inputSize + ' ' + typeInputClass + ' ' + fullWidthClass + ' ' + fullHeightClass" :style="props.styleAttr" :placeholder="props.placeholder" :value="props.modelValue" @change="onChange" @blur="onBlur" @focus="onFocus" @keyup="onKeyUp" @keydown="onKeyDown" @keypress="onKeyPress" @input="onInput" autocomplete="off" :required="props.required" ></textarea>
     </div>
 </template>
 
@@ -20,6 +20,9 @@ const props = withDefaults(defineProps<InputProps>(), {
     id: 'input-form',
     labelClass: 'label-primary',
     required: false,
+    className: '',
+    fullWidth: false,
+    fullHeight: false,
 });
 
 const emit = defineEmits<{
@@ -41,6 +44,17 @@ const model = computed({
     set: (value: string) => {
         emit('update:modelValue', value);
     }
+});
+
+const fullWidthClass = computed(() => {
+    if(props.fullWidth) return 'textarea-full-width';
+    return '';
+});
+
+const fullHeightClass = computed(() => {
+
+    if(props.fullHeight) return 'textarea-full-height';
+    return '';
 });
 
 function onInput(event: Event) {
@@ -107,6 +121,14 @@ const typeInputClass = computed(() => {
     display: flex;
     flex-direction: column;
     gap: calc(10 / 16 * 1rem);
+}
+
+.textarea-full-width{
+    width: 100% !important;
+}
+
+.textarea-full-height{
+    height: 100% !important;
 }
 
 /* size */

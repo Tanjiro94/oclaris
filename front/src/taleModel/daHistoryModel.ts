@@ -11,6 +11,7 @@ import type {
 	GenerationJobListItemDto,
 	ListGenerationJobsQueryDto
 } from '@/ts/api/validator/da';
+import { formatDateToShort } from '@/ts/utils/formateDate';
 
 type DaHistoryRow = RowWithId & {
 	name: string;
@@ -67,21 +68,12 @@ const columns: ColDef[] = [
 	},
 	{
 		id: 4,
-		label: 'Durée (ms)',
+		label: 'Durée (s)',
 		key: 'duration',
 		type: 'text',
 		show: true
 	}
 ];
-
-function formatDate(value: Date | string | null): string {
-	if (!value) return '';
-	if (value instanceof Date) {
-		return value.toISOString();
-	}
-	return value;
-}
-
 async function getData(view: View): Promise<AtomicDataRes<DaHistoryRow>> {
 
 	const params: ListGenerationJobsQueryDto = {}
@@ -102,7 +94,7 @@ async function getData(view: View): Promise<AtomicDataRes<DaHistoryRow>> {
 	let rows: DaHistoryRow[] = rawRows.map((item, index) => ({
 		_id: item.id ?? index,
 		name: item.model ?? 'Sans nom',
-		createdAt: formatDate(item.started_at),
+		createdAt: formatDateToShort(new Date(item.started_at ?? '')),
 		status: item.status,
 		duration: item.duration ?? null,
 		params: item.params ?? null,

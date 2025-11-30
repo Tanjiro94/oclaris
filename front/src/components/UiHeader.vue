@@ -22,7 +22,7 @@
                     </RouterLink>
                 </li>
                 <li :class="{ 'active': $route.path === '/create-da' }">
-                    <RouterLink to="/">
+                    <RouterLink to="/create-da">
                         <i class="fa-solid fa-palette"></i>
                         <span>Créer une DA</span>
                     </RouterLink>

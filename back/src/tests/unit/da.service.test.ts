@@ -6,24 +6,6 @@ import {
     listGenerationJobsForUser,
 } from '../../modules/da/services/da.service.js';
 
-type MockArtDirection = {
-    id: string;
-    user_id: string;
-    title: string;
-    brief: string;
-    use_gear: boolean;
-    status: 'draft' | 'pending' | 'ready' | 'archived';
-    created_at: Date;
-    updated_at: Date;
-};
-
-type MockFavorite = {
-    user_id: string;
-    art_direction_id: string;
-    created_at: Date;
-    art_direction: MockArtDirection;
-};
-
 describe('da services', () => {
     beforeEach(() => {
         jest.restoreAllMocks();
@@ -32,16 +14,20 @@ describe('da services', () => {
     test('createArtDirection crée une DA avec les bons champs', async () => {
         const userId = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 
-        const fakeCreated: MockArtDirection = {
+        const now = new Date();
+
+        const fakeCreated = {
             id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
             user_id: userId,
             title: 'My DA',
             brief: 'Un brief',
             use_gear: true,
-            status: 'draft',
-            created_at: new Date(),
-            updated_at: new Date(),
-        };
+            status: 'draft' as const,
+            created_at: now,
+            updated_at: now,
+        } as unknown as Awaited<
+            ReturnType<(typeof prisma.art_direction)['create']>
+        >;
 
         const spyCreate = jest
             .spyOn(prisma.art_direction, 'create')
@@ -67,19 +53,32 @@ describe('da services', () => {
         expect(result).toEqual(fakeCreated);
     });
 
-    test('listUserArtDirections renvoie la liste formatée + total', async () => {
+    test('listUserArtDirections renvoie la liste formatée + total (avec styles/pictures/isFavorite)', async () => {
         const userId = 'user-123';
 
-        const rows: MockArtDirection[] = [
+        const now1 = new Date('2025-01-01T00:00:00.000Z');
+        const now2 = new Date('2025-02-01T00:00:00.000Z');
+
+        const rows = [
             {
                 id: 'ad-1',
                 user_id: userId,
                 title: 'DA 1',
                 brief: 'Brief 1',
                 use_gear: false,
-                status: 'draft',
-                created_at: new Date('2025-01-01T00:00:00.000Z'),
-                updated_at: new Date('2025-01-02T00:00:00.000Z'),
+                status: 'draft' as const,
+                created_at: now1,
+                updated_at: now1,
+                ad_style: [
+                    {
+                        style: { libelle: 'Ciné' },
+                    },
+                ],
+                picture_generated: [
+                    { url: 'https://example.com/img1.jpg' },
+                    { url: 'https://example.com/img2.jpg' },
+                ],
+                favorite: [],
             },
             {
                 id: 'ad-2',
@@ -87,11 +86,16 @@ describe('da services', () => {
                 title: 'DA 2',
                 brief: 'Brief 2',
                 use_gear: true,
-                status: 'ready',
-                created_at: new Date('2025-02-01T00:00:00.000Z'),
-                updated_at: new Date('2025-02-02T00:00:00.000Z'),
+                status: 'ready' as const,
+                created_at: now2,
+                updated_at: now2,
+                ad_style: [],
+                picture_generated: [],
+                favorite: [{ user_id: userId }],
             },
-        ];
+        ] as unknown as Awaited<
+            ReturnType<(typeof prisma.art_direction)['findMany']>
+        >;
 
         const spyFindMany = jest
             .spyOn(prisma.art_direction, 'findMany')
@@ -134,12 +138,15 @@ describe('da services', () => {
             brief: 'Brief 1',
             status: 'draft',
         });
+        expect(Array.isArray(result.data[0].styles)).toBe(true);
+        expect(Array.isArray(result.data[0].pictures)).toBe(true);
+        expect(result.data[1].isFavorite).toBe(true);
     });
 
     test('listFavoriteArtDirections renvoie les DA favorites formatées', async () => {
         const userId = 'user-123';
 
-        const favs: MockFavorite[] = [
+        const favs = [
             {
                 user_id: userId,
                 art_direction_id: 'ad-1',
@@ -150,12 +157,22 @@ describe('da services', () => {
                     title: 'DA Favori',
                     brief: 'Brief Fav',
                     use_gear: true,
-                    status: 'ready',
+                    status: 'ready' as const,
                     created_at: new Date('2025-01-01T00:00:00.000Z'),
                     updated_at: new Date('2025-01-02T00:00:00.000Z'),
+                    ad_style: [
+                        {
+                            style: { libelle: 'Portrait' },
+                        },
+                    ],
+                    picture_generated: [
+                        { url: 'https://example.com/fav1.jpg' },
+                    ],
                 },
             },
-        ];
+        ] as unknown as Awaited<
+            ReturnType<(typeof prisma.favorite)['findMany']>
+        >;
 
         const spyFindFav = jest
             .spyOn(prisma.favorite, 'findMany')
@@ -184,6 +201,9 @@ describe('da services', () => {
             title: 'DA Favori',
             status: 'ready',
         });
+        expect(result.data[0].isFavorite).toBe(true);
+        expect(Array.isArray(result.data[0].styles)).toBe(true);
+        expect(Array.isArray(result.data[0].pictures)).toBe(true);
     });
 
     test('listGenerationJobsForUser applique correctement les filtres', async () => {
@@ -201,9 +221,6 @@ describe('da services', () => {
                 status: 'succeeded' as const,
                 started_at: new Date('2025-03-01T00:00:00.000Z'),
                 finished_at: new Date('2025-03-01T00:05:00.000Z'),
-                // au cas où ton modèle a ces champs :
-                created_at: new Date('2025-03-01T00:00:00.000Z'),
-                updated_at: new Date('2025-03-01T00:05:00.000Z'),
             },
         ] as unknown as Awaited<
             ReturnType<(typeof prisma.generation_job)['findMany']>

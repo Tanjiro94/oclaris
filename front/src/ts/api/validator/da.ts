@@ -1,4 +1,3 @@
-// src/ts/api/validator/da.ts
 import { z } from 'zod';
 
 export const adStatusSchema = z.enum(['draft', 'pending', 'ready', 'archived']);
@@ -103,7 +102,6 @@ export const listGenerationJobsResponseSchema = z.object({
     total: z.number(),
 });
 
-// 👇 ICI on ajoute bien styles + pictures + isFavorite
 export const daListItemSchema = z.object({
     id: uuidSchema,
     title: z.string(),
@@ -122,6 +120,50 @@ export const getDaListResponseSchema = z.object({
     total: z.number(),
 });
 
+// 🔹 Body front aligné avec le back
+export const generateDaBodySchema = z.object({
+    count: z.number().int().min(1).max(12).default(6),
+    model: z.string().default('default'),
+    creative_constraints: z.string().min(1).optional(),
+    styles: z.array(z.string()).optional(),
+});
+
+export const generatedPictureSchema = z.object({
+    id: uuidSchema,
+    url: z.string().url(),
+});
+
+// 🔹 Réponse front alignée avec le back
+export const generateDaResponseSchema = z.object({
+    job: generationJobListItemSchema,
+    pictures: z.array(generatedPictureSchema),
+    technicalAdvice: z.string(),
+    locationSuggestions: z.array(z.string()),
+    improvedPrompt: z.string(),
+});
+
+export const enqueueGenerationJobSchema = z.object({
+    model: z.string().min(1).default('sdxl'),
+    images_count: z.number().int().min(1).max(8).default(4),
+});
+
+export const createImageGenerationJobSchema = z.object({
+    model: z.string().default('image-basic-v1'),
+    images_count: z.number().int().min(1).max(8).default(4),
+});
+
+// 🔹 Styles pour le front
+export const styleSchema = z.object({
+    id: uuidSchema,
+    name: z.string(),
+});
+
+export type GenerateDaBodyDto = z.infer<typeof generateDaBodySchema>;
+export type GeneratedPictureDto = z.infer<typeof generatedPictureSchema>;
+export type GenerateDaResponseDto = z.infer<typeof generateDaResponseSchema>;
+
+export type EnqueueGenerationJobDto = z.infer<typeof enqueueGenerationJobSchema>;
+export type CreateImageGenerationJobDto = z.infer<typeof createImageGenerationJobSchema>;
 
 export type CreateDaDto = z.infer<typeof createDaSchema>;
 export type UpdateDaDto = z.infer<typeof updateDaSchema>;
@@ -152,4 +194,5 @@ export type DaListItemDto = z.infer<typeof daListItemSchema>;
 export type GetDaListResponseDto = z.infer<typeof getDaListResponseSchema>;
 export type DaDetailDto = DaListItemDto;
 export type AddPlaceDto = AddPlaceToDaDto;
-export type ToggleFavoriteResponseDto = {isFavorite: boolean};
+export type ToggleFavoriteResponseDto = { isFavorite: boolean };
+export type StyleDto = z.infer<typeof styleSchema>;

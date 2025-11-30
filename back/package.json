@@ -14,7 +14,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "cross-env ENVIRONMENT=test jest --passWithNoTests --runInBand",
-    "test:watch": "cross-env ENVIRONMENT=test jest --watch"
+    "test:watch": "cross-env ENVIRONMENT=test jest --watch",
+    "worker:generation": "node dist/cli/runWorker.js"
   },
   "keywords": [],
   "author": "",
@@ -30,6 +31,7 @@
     "helmet": "^8.1.0",
     "ioredis": "^5.7.0",
     "jsonwebtoken": "^9.0.2",
+    "jszip": "^3.10.1",
     "morgan": "^1.10.1",
     "prisma": "^6.14.0",
     "resend": "^6.0.2",
