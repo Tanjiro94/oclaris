@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const adStatusSchema = z.enum(['draft', 'pending', 'ready', 'archived']);
+
 export const jobStatusSchema = z.enum([
     'queued',
     'running',
@@ -8,6 +9,7 @@ export const jobStatusSchema = z.enum([
     'failed',
     'cancelled',
 ]);
+
 export const uuidSchema = z.string().uuid();
 
 export const createDaSchema = z.object({
@@ -26,7 +28,7 @@ export const updateDaSchema = z
     })
     .refine((data) => Object.keys(data).length > 0, {
         message: 'Au moins un champ doit être fourni pour la mise à jour',
-});
+    });
 
 export const getDaByIdSchema = z.object({
     id: uuidSchema,
@@ -50,16 +52,8 @@ export const listFavoriteDasSchema = z.object({});
 export const daPlaceBodySchema = z.object({
     name: z.string().min(1, 'Le nom du lieu est obligatoire'),
     address: z.string().max(255).optional(),
-    lat: z
-        .number()
-        .min(-90)
-        .max(90)
-        .optional(),
-    lng: z
-        .number()
-        .min(-180)
-        .max(180)
-        .optional(),
+    lat: z.number().min(-90).max(90).optional(),
+    lng: z.number().min(-180).max(180).optional(),
     maps_url: z.string().url().optional(),
 });
 
@@ -77,9 +71,10 @@ export const setDaStylesSchema = z.object({
     style_ids: z.array(uuidSchema).default([]),
 });
 
+// 👉 Nouveau : contraintes = simple texte
 export const setDaConstraintsSchema = z.object({
     art_direction_id: uuidSchema,
-    constraint_option_ids: z.array(uuidSchema).default([]),
+    constraints: z.string().min(1, 'Les contraintes créatives sont obligatoires'),
 });
 
 export const listGenerationJobsForDaSchema = z.object({
@@ -103,7 +98,6 @@ export const generationJobListItemSchema = z.object({
     status: jobStatusSchema,
     started_at: z.date().or(z.string()).nullable(),
     finished_at: z.date().or(z.string()).nullable(),
-    created_at: z.date().or(z.string()).optional(),
 });
 
 export const listGenerationJobsResponseSchema = z.object({
@@ -119,12 +113,50 @@ export const daListItemSchema = z.object({
     status: adStatusSchema,
     created_at: z.date().or(z.string()),
     updated_at: z.date().or(z.string()),
+    styles: z.array(z.string()).default([]),
+    pictures: z.array(z.string()).default([]),
+    isFavorite: z.boolean().optional(),
 });
 
 export const getDaListResponseSchema = z.object({
     data: z.array(daListItemSchema),
     total: z.number(),
 });
+
+// 🔹 Body de génération enrichi
+export const generateDaBodySchema = z.object({
+    count: z.number().int().min(1).max(12).default(6),
+    model: z.string().default('default'),
+    creative_constraints: z.string().min(1).optional(),
+    styles: z.array(z.string()).optional(),
+});
+
+export const generatedPictureSchema = z.object({
+    id: uuidSchema,
+    url: z.string().url(),
+});
+
+// 🔹 Réponse de génération enrichie avec improvedPrompt
+export const generateDaResponseSchema = z.object({
+    job: generationJobListItemSchema,
+    pictures: z.array(generatedPictureSchema),
+    technicalAdvice: z.string(),
+    locationSuggestions: z.array(z.string()),
+    improvedPrompt: z.string(),
+});
+
+export const enqueueGenerationJobSchema = z.object({
+    model: z.string().min(1).default('sdxl'),
+    images_count: z.number().int().min(1).max(8).default(4),
+});
+
+export const createImageGenerationJobSchema = z.object({
+    model: z.string().default('image-basic-v1'),
+    images_count: z.number().int().min(1).max(8).default(4),
+});
+
+export type CreateImageGenerationJobInput = z.infer<typeof createImageGenerationJobSchema>;
+export type EnqueueGenerationJobInput = z.infer<typeof enqueueGenerationJobSchema>;
 
 export type CreateDaInput = z.infer<typeof createDaSchema>;
 export type UpdateDaInput = z.infer<typeof updateDaSchema>;
@@ -153,3 +185,6 @@ export type ListGenerationJobsResponse = z.infer<
 
 export type DaListItem = z.infer<typeof daListItemSchema>;
 export type GetDaListResponse = z.infer<typeof getDaListResponseSchema>;
+
+export type GenerateDaBodyInput = z.infer<typeof generateDaBodySchema>;
+export type GenerateDaResponse = z.infer<typeof generateDaResponseSchema>;

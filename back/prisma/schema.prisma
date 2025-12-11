@@ -8,18 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model ad_constraint {
-  art_direction_id     String            @db.Uuid
-  constraint_option_id String            @db.Uuid
-  created_at           DateTime          @default(now()) @db.Timestamptz(6)
-  art_direction        art_direction     @relation(fields: [art_direction_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_adconst_ad")
-  constraint_option    constraint_option @relation(fields: [constraint_option_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_adconst_opt")
-
-  @@id([art_direction_id, constraint_option_id])
-  @@index([art_direction_id], map: "idx_adconst_ad")
-  @@index([constraint_option_id], map: "idx_adconst_option")
-}
-
 model ad_place {
   id               String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   art_direction_id String        @db.Uuid
@@ -55,7 +43,7 @@ model art_direction {
   status            ad_status           @default(draft)
   created_at        DateTime            @default(now()) @db.Timestamptz(6)
   updated_at        DateTime            @default(now()) @db.Timestamptz(6)
-  ad_constraint     ad_constraint[]
+  constraints       String?
   ad_place          ad_place[]
   ad_style          ad_style[]
   user              user                @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_ad_user")
@@ -64,30 +52,6 @@ model art_direction {
   picture_generated picture_generated[]
 
   @@index([user_id], map: "idx_ad_user")
-}
-
-model constraint_option {
-  id                 String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  constraint_type_id String          @db.Uuid
-  code               String          @db.VarChar(120)
-  label              String          @db.VarChar(120)
-  is_active          Boolean         @default(true)
-  sort_order         Int             @default(0)
-  created_at         DateTime        @default(now()) @db.Timestamptz(6)
-  ad_constraint      ad_constraint[]
-  constraint_type    constraint_type @relation(fields: [constraint_type_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_copt_ctype")
-
-  @@unique([constraint_type_id, code], map: "uq_copt")
-}
-
-model constraint_type {
-  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code              String              @unique @db.VarChar(120)
-  label             String              @db.VarChar(120)
-  is_active         Boolean             @default(true)
-  sort_order        Int                 @default(0)
-  created_at        DateTime            @default(now()) @db.Timestamptz(6)
-  constraint_option constraint_option[]
 }
 
 model favorite {

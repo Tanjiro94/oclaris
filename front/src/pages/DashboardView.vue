@@ -20,14 +20,14 @@
                 </div>
                 <div class="col col-xl-6 col-md-12 col-sm-6 col-xs-4 second-stage-item-wrapper-item history-item-wrapper" v-if="historyDA.length > 0">
                     <div class="second-stage-item history-item">
-                        <div class="da-wrapper" v-for="value in historyDA" :key="value.id">
+                        <div class="da-wrapper" v-for="value in historyDA" :key="value.id" @click="router.push(`/art-directions/${value.id}`)">
                             <div class="imgs-wrapper">
                                 <div class="img-item" v-for="image in value.pictures" :key="image">
-                                    <img :src="`/assets/${image}`" alt="image">
+                                    <img :src="image" alt="image">
                                 </div>
                             </div>
                             <div class="da-item-style">
-                                <p>Style - {{ value.styles.join(', ') }}</p>
+                                <p>Style - {{ value.styles[0] + (value.styles.length > 1 ? ' + ' + (value.styles.length - 1) : '') }}</p>
                             </div>
                         </div>
                     </div>
@@ -64,7 +64,7 @@ import BarChart from '@/components/BarChart.vue';
 import LineChart from '@/components/LineChart.vue';
 import { getDashboard } from '@/ts/api/dashboard';
 import UiButton from '@/components/UiButton.vue';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRouter } from 'vue-router';
 
 type BannerStat = {
     title: string;
@@ -94,6 +94,8 @@ const seriesB = ref([])
 
 const labelsStyles = ref([])
 const valuesStyles = ref([])
+
+const router = useRouter();
 
 
 const getDashboardData = async ()=> {
@@ -191,6 +193,7 @@ h1{
     border-radius: var(--border-radius);
     height: 100%;
     grid-column: span 3;
+    cursor: pointer;
 }
 
 .second-stage-wrapper .history-item-wrapper .history-item .da-wrapper .imgs-wrapper{

@@ -1,4 +1,5 @@
 <template>
+    <label v-if="props.label">{{ props.label }}</label>
     <div class="toggle-container" 
     :class="{ 'toggled': props.modelValue }" 
     role="switch"
@@ -17,6 +18,7 @@ import { defineProps, defineEmits } from 'vue';
 
 const props = defineProps<{
     modelValue: boolean;
+    label?: string;
 }>();
 
 const emit = defineEmits<{

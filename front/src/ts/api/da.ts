@@ -11,6 +11,11 @@ import type {
     ListGenerationJobsResponseDto,
     ListGenerationJobsQueryDto,
     ToggleFavoriteResponseDto,
+    GenerateDaBodyDto,
+    GenerateDaResponseDto,
+    CreateImageGenerationJobDto,
+    GenerationJobListItemDto,
+    StyleDto,
 } from './validator/da.js';
 
 const getDaList = async (params?: GetDaListQueryDto) => {
@@ -100,8 +105,48 @@ const getGenerationJobsForUser = async (
     return response.data;
 };
 
+const generateDa = async (
+    daId: string,
+    payload?: Partial<GenerateDaBodyDto>,
+) => {
+    const body: GenerateDaBodyDto = {
+        count: payload?.count ?? 6,
+        model: payload?.model ?? 'llama3',
+        creative_constraints: payload?.creative_constraints,
+        styles: payload?.styles,
+    };
+
+    const response = await api.post<GenerateDaResponseDto>(
+        `/da/${daId}/generate`,
+        body,
+    );
+    return response.data;
+};
+
+const createImageGenerationJobForDa = async (
+    daId: string,
+    payload: CreateImageGenerationJobDto,
+) => {
+    const response = await api.post<GenerationJobListItemDto>(
+        `/da/${daId}/generation-jobs`,
+        payload,
+    );
+    return response.data;
+};
+
+const getStyleList = async () => {
+    const response = await api.get<StyleDto[]>('/da/styles');
+    return response.data;
+};
+
+const downloadDaImagesZip = async (daId: string) => {
+    const response = await api.get<Blob>(`/da/${daId}/images-zip`, {
+        responseType: 'blob',
+    });
+    return response.data;
+};
+
 export const daApi = {
-    // CRUD DA
     getDaList,
     getDaFavorites,
     getDaById,
@@ -109,18 +154,19 @@ export const daApi = {
     updateDa,
     deleteDa,
 
-    // Favoris
     toggleDaFavorite,
-
-    // Places
     addPlaceToDa,
     removePlaceFromDa,
 
-    // Styles & contraintes
     setDaStyles,
     setDaConstraints,
 
-    // Jobs
     getGenerationJobsForDa,
     getGenerationJobsForUser,
+
+    generateDa,
+    createImageGenerationJobForDa,
+
+    getStyleList,
+    downloadDaImagesZip,
 };

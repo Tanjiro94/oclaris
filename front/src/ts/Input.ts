@@ -21,6 +21,8 @@ export type InputProps = {
     error?: boolean;
     labelClass?: InputLabelClass;
     required?: boolean;
+    fullWidth?: boolean;
+    fullHeight?: boolean;
 
     onChange?: (value: string) => void;
     onBlur?: () => void;
