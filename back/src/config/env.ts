@@ -2,10 +2,10 @@ import 'dotenv/config';
 import { z } from 'zod';
 
 const envSchema = z.object({
-    DATABASE_URL: z.string(),
-    DATABASE_URL_TEST: z.string(),
-    DATABASE_URL_PROD: z.string(),
-    DATABASE_URL_STAGING: z.string(),
+    DATABASE_URL: z.string().optional(),
+    DATABASE_URL_TEST: z.string().optional(),
+    DATABASE_URL_PROD: z.string().optional(),
+    DATABASE_URL_STAGING: z.string().optional(),
     JWT_SECRET: z.string(),
     CORS_ORIGIN: z.string(),
     PORT: z.string(),
@@ -29,7 +29,7 @@ const envRaw = {
     PORT: process.env.PORT,
     REDIS_URL: process.env.REDIS_URL,
     BCRYPT_SALT: parseInt(process.env.BCRYPT_SALT || '10'),
-    ENVIRONMENT: process.env.ENVIRONMENT,
+    ENVIRONMENT: process.env.ENVIRONMENT || 'dev',
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     APP_URL: process.env.APP_URL,
     API_URL: process.env.API_URL,
