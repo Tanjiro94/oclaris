@@ -146,7 +146,6 @@ const downloadDaImagesZip = async (daId: string) => {
     return response.data;
 };
 
-
 export const daApi = {
     getDaList,
     getDaFavorites,

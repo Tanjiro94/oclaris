@@ -249,6 +249,48 @@ type PersistedDaState = {
     isFavorite: boolean;
 };
 
+const styles = ref<StyleDto[]>([]);
+const loadingStyles = ref(false);
+
+const hasGear = ref(false);
+
+const form = ref<{
+    brief: string;
+    creativeConstraints: string;
+    styles: string[];
+    useGear: boolean;
+}>({
+    brief: '',
+    creativeConstraints: '',
+    styles: [],
+    useGear: false,
+});
+
+const currentDaId = ref<string | null>(null);
+
+const imagesGenerated = ref<GeneratedPictureDto[]>([]);
+const technicalAdvice = ref<string>('');
+const placesSuggestions = ref<string[]>([]);
+
+const generationStats = ref<{
+    duration: number;
+    count: number;
+    model: string;
+} | null>(null);
+
+const loading = ref(false);
+const errorMessage = ref<string | null>(null);
+
+const isFavorite = ref(false);
+const toggleFavoriteLoading = ref(false);
+const downloadLoading = ref(false);
+
+const selectedStyleNames = computed(() =>
+    styles.value
+        .filter((s) => form.value.styles.includes(s.id))
+        .map((s) => s.name),
+);
+
 function persistState() {
     if (typeof window === 'undefined') return;
 
@@ -311,9 +353,6 @@ function clearPersistedState() {
     }
 }
 
-const styles = ref<StyleDto[]>([]);
-const loadingStyles = ref(false);
-
 async function loadStyles() {
     try {
         loadingStyles.value = true;
@@ -327,8 +366,6 @@ async function loadStyles() {
         loadingStyles.value = false;
     }
 }
-
-const hasGear = ref(false);
 
 async function checkHasGear() {
     try {
@@ -348,43 +385,6 @@ async function checkHasGear() {
 function goToGearPage() {
     router.push('/account');
 }
-
-const form = ref<{
-    brief: string;
-    creativeConstraints: string;
-    styles: string[];
-    useGear: boolean;
-}>({
-    brief: '',
-    creativeConstraints: '',
-    styles: [],
-    useGear: false,
-});
-
-const currentDaId = ref<string | null>(null);
-
-const imagesGenerated = ref<GeneratedPictureDto[]>([]);
-const technicalAdvice = ref<string>('');
-const placesSuggestions = ref<string[]>([]);
-
-const generationStats = ref<{
-    duration: number;
-    count: number;
-    model: string;
-} | null>(null);
-
-const loading = ref(false);
-const errorMessage = ref<string | null>(null);
-
-const isFavorite = ref(false);
-const toggleFavoriteLoading = ref(false);
-const downloadLoading = ref(false);
-
-const selectedStyleNames = computed(() =>
-    styles.value
-        .filter((s) => form.value.styles.includes(s.id))
-        .map((s) => s.name),
-);
 
 onMounted(async () => {
     restoreStateFromStorage();
@@ -431,6 +431,7 @@ async function onGenerateClick() {
     isFavorite.value = false;
 
     try {
+        // 1. Créer ou mettre à jour la DA
         if (!currentDaId.value) {
             const payload = {
                 title: buildTitleFromBrief(form.value.brief),
@@ -439,9 +440,7 @@ async function onGenerateClick() {
                 status: 'draft' as const,
             };
 
-            const createdDa: { id: string } = await daApi.createDa(
-                payload,
-            );
+            const createdDa: { id: string } = await daApi.createDa(payload);
             currentDaId.value = createdDa.id;
             isFavorite.value = false;
         } else {
@@ -456,11 +455,22 @@ async function onGenerateClick() {
             throw new Error("Impossible de récupérer l'id de la direction artistique.");
         }
 
+        // 2. Styles
         await daApi.setDaStyles(currentDaId.value, {
             art_direction_id: currentDaId.value,
             style_ids: form.value.styles,
         });
 
+        // 3. Contraintes créatives (stockées en BDD si non vides)
+        const trimmedConstraints = form.value.creativeConstraints.trim();
+        if (trimmedConstraints) {
+            await daApi.setDaConstraints(currentDaId.value, {
+                art_direction_id: currentDaId.value,
+                constraints: trimmedConstraints,
+            });
+        }
+
+        // 4. Génération des images
         const startedAt = performance.now();
 
         const result = await daApi.generateDa(currentDaId.value, {
@@ -561,10 +571,10 @@ async function onDownloadImagesClick() {
         downloadLoading.value = false;
     }
 }
-
 </script>
 
 <style scoped>
+/* ton CSS existant, inchangé */
 h1 {
     margin-bottom: var(--spacing-l);
 }
@@ -590,13 +600,6 @@ h1 {
     flex-direction: column;
     gap: var(--spacing-m);
 }
-
-/* .art-direction-view-content
-    .art-direction-view-content-left-item,
-.art-direction-view-content
-    .art-direction-view-content-right-item {
-    height: 100%;
-} */
 
 .form-group.brief-wrapper {
     margin-bottom: var(--spacing-m);

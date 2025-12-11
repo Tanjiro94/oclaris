@@ -1,4 +1,4 @@
-// da.service.js
+// da.service.ts
 
 import prisma from '../../../infra/db/prismaClient.js';
 
@@ -43,7 +43,6 @@ type GenerationJobParams = {
     use_gear?: boolean;
     gear?: { type: string; brand: string; model: string }[];
 };
-
 
 export const createArtDirection = async (
     userId: string,
@@ -141,13 +140,6 @@ export const getArtDirectionById = async (
             ad_place: true,
             ad_style: {
                 include: { style: true },
-            },
-            ad_constraint: {
-                include: {
-                    constraint_option: {
-                        include: { constraint_type: true },
-                    },
-                },
             },
             picture_generated: true,
             generation_job: true,
@@ -250,7 +242,9 @@ export const toggleFavoriteArtDirection = async (
     return { isFavorite: true };
 };
 
-export const listFavoriteArtDirections = async ( userId: string ): Promise<GetDaListResponse> => {
+export const listFavoriteArtDirections = async (
+    userId: string,
+): Promise<GetDaListResponse> => {
     const favorites = await prisma.favorite.findMany({
         where: { user_id: userId },
         include: {
@@ -387,7 +381,7 @@ export const setArtDirectionConstraints = async (
     userId: string,
     input: SetDaConstraintsInput,
 ) => {
-    const { art_direction_id, constraint_option_ids } = input;
+    const { art_direction_id, constraints } = input;
 
     const ad = await prisma.art_direction.findFirst({
         where: { id: art_direction_id, user_id: userId },
@@ -398,23 +392,13 @@ export const setArtDirectionConstraints = async (
         throw new Error('Direction artistique introuvable ou non autorisée');
     }
 
-    await prisma.$transaction([
-        prisma.ad_constraint.deleteMany({
-            where: {
-                art_direction_id,
-                ...(constraint_option_ids.length > 0
-                    ? { constraint_option_id: { notIn: constraint_option_ids } }
-                    : {}),
-            },
-        }),
-        prisma.ad_constraint.createMany({
-            data: constraint_option_ids.map((optionId) => ({
-                art_direction_id,
-                constraint_option_id: optionId,
-            })),
-            skipDuplicates: true,
-        }),
-    ]);
+    await prisma.art_direction.update({
+        where: { id: art_direction_id },
+        data: {
+            constraints: constraints.trim(),
+            updated_at: new Date(),
+        },
+    });
 
     return { success: true };
 };
@@ -504,19 +488,6 @@ function buildFakeImages(count: number, seed: string) {
     }));
 }
 
-/* function buildFakeTechnicalAdvice(brief: string, useGear: boolean): string {
-    const gearPart = useGear
-        ? 'Pense à exploiter ton matériel (ouvertures lumineuses, focales adaptées, trépied si besoin).'
-        : 'Même sans matériel avancé, privilégie une lumière directionnelle et des compositions fortes.';
-
-    return [
-        `À partir du brief suivant : "${brief}".`,
-        'Commence par définir 2–3 ambiances fortes et cohérentes.',
-        'Varie les plans (large, moyen, serré) pour raconter une vraie histoire visuelle.',
-        gearPart,
-    ].join(' ');
-} */
-
 function buildFakeLocationSuggestions(): string[] {
     return [
         'Un lieu cohérent avec le style dominant (urbain, nature, industriel...).',
@@ -541,12 +512,21 @@ export const generateForArtDirection = async (
             id: true,
             brief: true,
             use_gear: true,
+            constraints: true, // 👈 on récupère le texte stocké
         },
     });
 
     if (!ad) {
         throw new Error('Direction artistique introuvable ou non autorisée');
     }
+
+    // On combine : priorité au champ saisi pour cette génération,
+    // sinon on retombe sur les contraintes stockées en BDD
+    const trimmedFromInput = creative_constraints?.trim();
+    const combinedConstraints =
+        trimmedFromInput && trimmedFromInput.length > 0
+            ? trimmedFromInput
+            : ad.constraints ?? undefined;
 
     let gearList: { type: string; brand: string; model: string }[] = [];
     if (ad.use_gear) {
@@ -571,7 +551,7 @@ export const generateForArtDirection = async (
             params: <GenerationJobParams>{
                 count,
                 model,
-                creative_constraints: creative_constraints ?? null,
+                creative_constraints: combinedConstraints ?? null,
                 styles: styles ?? [],
             },
             started_at: startedAt,
@@ -582,7 +562,7 @@ export const generateForArtDirection = async (
         const refinement = await refinePromptWithAI({
             brief: ad.brief,
             styles: styles ?? [],
-            creativeConstraints: creative_constraints,
+            creativeConstraints: combinedConstraints,
             useGear: ad.use_gear,
             gearList,
         });
@@ -625,7 +605,6 @@ export const generateForArtDirection = async (
             Math.round((finishedAt.getTime() - startedAt.getTime()) / 1000),
         );
 
-        // ⚠️ plus de "as any" ici
         const baseParams: GenerationJobParams =
             (job.params as GenerationJobParams | null) ?? {};
 

@@ -214,13 +214,6 @@ type DaDetailWithRelations = DaDetailDto & {
         style?: { id: string } | null;
         style_id?: string | null;
     }[];
-    ad_constraint?: {
-        constraint_option?: {
-            label?: string | null;
-            libelle?: string | null;
-            name?: string | null;
-        } | null;
-    }[];
     ad_place?: {
         name?: string | null;
         address?: string | null;
@@ -228,6 +221,7 @@ type DaDetailWithRelations = DaDetailDto & {
     picture_generated?: { id: string; url: string }[];
     pictures?: ({ id: string; url: string } | string)[];
     favorite?: unknown[];
+    constraints?: string | null;
 };
 
 /**
@@ -338,8 +332,8 @@ onMounted(async () => {
         // --- STYLES DE CETTE DA --- //
         form.value.styles = Array.isArray(data.ad_style)
             ? data.ad_style
-                  .map((rel) => rel.style?.id ?? rel.style_id)
-                  .filter((styleId): styleId is string => Boolean(styleId))
+                .map((rel) => rel.style?.id ?? rel.style_id)
+                .filter((styleId): styleId is string => Boolean(styleId))
             : [];
 
         // --- IMAGES GÉNÉRÉES --- //
@@ -384,19 +378,8 @@ onMounted(async () => {
             }
         }
 
-        // 2. Si pas de contraintes texte, on essaye de dériver depuis les contraintes liées (ad_constraint)
-        if (!constraintsText && Array.isArray(data.ad_constraint)) {
-            const constraintLabels = data.ad_constraint
-                .map((c) =>
-                    c.constraint_option?.label ??
-                    c.constraint_option?.libelle ??
-                    c.constraint_option?.name,
-                )
-                .filter((label): label is string => Boolean(label));
-
-            if (constraintLabels.length > 0) {
-                constraintsText = constraintLabels.join(', ');
-            }
+        if (!constraintsText && data.constraints) {
+            constraintsText = data.constraints;
         }
 
         form.value.creativeConstraints = constraintsText;
@@ -404,8 +387,8 @@ onMounted(async () => {
         // 3. Lieux enregistrés côté BDD (fallback)
         const savedPlaces = Array.isArray(data.ad_place)
             ? data.ad_place
-                  .map((p) => p.name || p.address)
-                  .filter((val): val is string => Boolean(val))
+                .map((p) => p.name || p.address)
+                .filter((val): val is string => Boolean(val))
             : [];
 
         // 4. Lieux : priorité aux suggestions IA, sinon lieux sauvegardés

@@ -71,9 +71,10 @@ export const setDaStylesSchema = z.object({
     style_ids: z.array(uuidSchema).default([]),
 });
 
+// 👉 Nouveau : contraintes = simple texte
 export const setDaConstraintsSchema = z.object({
     art_direction_id: uuidSchema,
-    constraint_option_ids: z.array(uuidSchema).default([]),
+    constraints: z.string().min(1, 'Les contraintes créatives sont obligatoires'),
 });
 
 export const listGenerationJobsForDaSchema = z.object({
@@ -129,6 +130,7 @@ export const generateDaBodySchema = z.object({
     creative_constraints: z.string().min(1).optional(),
     styles: z.array(z.string()).optional(),
 });
+
 export const generatedPictureSchema = z.object({
     id: uuidSchema,
     url: z.string().url(),

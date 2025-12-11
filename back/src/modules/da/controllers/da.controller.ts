@@ -239,7 +239,7 @@ export async function setDaConstraintsController(
 
         const parsed = setDaConstraintsSchema.parse({
             art_direction_id: id,
-            constraint_option_ids: req.body.constraint_option_ids,
+            constraints: req.body.constraints,
         });
 
         const result = await setArtDirectionConstraints(userId, parsed);

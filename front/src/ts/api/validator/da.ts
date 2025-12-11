@@ -69,9 +69,10 @@ export const setDaStylesSchema = z.object({
     style_ids: z.array(uuidSchema).default([]),
 });
 
+// 👉 nouveau : contraintes = texte simple
 export const setDaConstraintsSchema = z.object({
     art_direction_id: uuidSchema,
-    constraint_option_ids: z.array(uuidSchema).default([]),
+    constraints: z.string().min(1),
 });
 
 export const listGenerationJobsForDaSchema = z.object({
