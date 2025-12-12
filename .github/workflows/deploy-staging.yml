@@ -1,0 +1,35 @@
+name: Deploy staging
+
+on:
+  push:
+    branches:
+      - staging
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout (optional)
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.STAGING_SSH_KEY }}" > ~/.ssh/oclaris_actions
+          chmod 600 ~/.ssh/oclaris_actions
+          ssh-keyscan -H "${{ secrets.STAGING_SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy to staging server
+        run: |
+          ssh -i ~/.ssh/oclaris_actions \
+             "${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_SSH_HOST }}" << 'EOF'
+            set -e
+            cd ~/oclaris
+            git fetch origin
+            git checkout staging
+            git reset --hard origin/staging
+            docker-compose -f docker-compose.staging.yml pull
+            docker-compose -f docker-compose.staging.yml up -d --build
+          EOF
+
