@@ -2,24 +2,26 @@ version: "3.9"
 
 services:
   backend:
+    image: oclaris_backend_staging
     build:
       context: ./back
       dockerfile: Dockerfile
     env_file:
       - ./back/.env.staging
     ports:
-      - "3000:3000"
+      - "3001:3000"
     depends_on:
       - redis
 
   frontend:
+    image: oclaris_frontend_staging
     build:
       context: ./front
       dockerfile: Dockerfile
     env_file:
       - ./front/.env.staging
     ports:
-      - "80:80"
+      - "8080:80"
     depends_on:
       - backend
     volumes:
