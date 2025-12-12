@@ -13,33 +13,23 @@ jobs:
       - name: Checkout (optional)
         uses: actions/checkout@v4
 
-      - name: Setup SSH key
+      - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.STAGING_SSH_KEY }}" > ~/.ssh/oclaris_actions
           chmod 600 ~/.ssh/oclaris_actions
-          ssh-keyscan -H ${{ secrets.STAGING_SSH_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H "${{ secrets.STAGING_SSH_HOST }}" >> ~/.ssh/known_hosts
 
       - name: Deploy to staging server
         run: |
           ssh -i ~/.ssh/oclaris_actions \
-            ${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_SSH_HOST }} << 'EOF'
+             "${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_SSH_HOST }}" << 'EOF'
             set -e
             cd ~/oclaris
-
-            echo "[STAGING] Fetch + reset sur origin/staging"
-            git fetch --all
+            git fetch origin
+            git checkout staging
             git reset --hard origin/staging
-
-            echo "[STAGING] docker-compose down"
-            docker-compose -f docker-compose.staging.yml down
-
-            echo "[STAGING] docker-compose pull"
             docker-compose -f docker-compose.staging.yml pull
-
-            echo "[STAGING] docker-compose up -d --build"
             docker-compose -f docker-compose.staging.yml up -d --build
-
-            echo "[STAGING] ps"
-            docker-compose -f docker-compose.staging.yml ps
           EOF
+
