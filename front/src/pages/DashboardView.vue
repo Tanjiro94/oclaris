@@ -19,7 +19,7 @@
                     </div>
                 </div>
                 <div class="col col-xl-6 col-md-12 col-sm-6 col-xs-4 second-stage-item-wrapper-item history-item-wrapper" v-if="historyDA.length > 0">
-                    <div class="second-stage-item history-item">
+                    <div class="second-stage-item history-item" :class="historyGridClass">
                         <div class="da-wrapper" v-for="value in historyDA" :key="value.id" @click="router.push(`/art-directions/${value.id}`)">
                             <div class="imgs-wrapper">
                                 <div class="img-item" v-for="image in value.pictures" :key="image">
@@ -59,7 +59,7 @@
 </div>
 </template>
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import BarChart from '@/components/BarChart.vue';
 import LineChart from '@/components/LineChart.vue';
 import { getDashboard } from '@/ts/api/dashboard';
@@ -97,6 +97,12 @@ const valuesStyles = ref([])
 
 const router = useRouter();
 
+const historyGridClass = computed(() => {
+    const n = historyDA.value.length;
+    if (n <= 1) return 'grid-1';
+    if (n === 2) return 'grid-2';
+    return 'grid-4';
+});
 
 const getDashboardData = async ()=> {
     try{
@@ -172,11 +178,23 @@ h1{
 
 .second-stage-wrapper .history-item-wrapper .history-item{
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
     align-items: stretch;
     gap: calc(20 / 16 * 1rem);
     height: 100%;
 }
+
+.second-stage-wrapper .history-item-wrapper .history-item.grid-1{
+    grid-template-columns: 1fr;
+}
+
+.second-stage-wrapper .history-item-wrapper .history-item.grid-2{
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.second-stage-wrapper .history-item-wrapper .history-item.grid-4{
+    grid-template-columns: repeat(2, 1fr);
+}
+
 
 .second-stage-wrapper .history-item-wrapper-void{
     display: flex;
@@ -192,9 +210,9 @@ h1{
     padding: var(--spacing-s);
     border-radius: var(--border-radius);
     height: 100%;
-    grid-column: span 3;
     cursor: pointer;
 }
+
 
 .second-stage-wrapper .history-item-wrapper .history-item .da-wrapper .imgs-wrapper{
     display: grid;
@@ -203,6 +221,11 @@ h1{
     height: calc(80 / 16 * 1rem);
     margin-bottom: var(--spacing-s);
 }
+.second-stage-wrapper .history-item-wrapper .history-item.grid-1 .imgs-wrapper, .second-stage-wrapper .history-item-wrapper .history-item.grid-2 .imgs-wrapper{
+    gap: calc(8 / 16 * 1rem);
+    height: calc(180 / 16 * 1rem);
+}
+
 
 .second-stage-wrapper .history-item-wrapper .history-item .da-wrapper .imgs-wrapper .img-item{
     grid-column: span 2;
