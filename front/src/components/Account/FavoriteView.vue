@@ -26,7 +26,7 @@
             <RouterLink
                 v-for="favorite in displayedFavorites"
                 :key="favorite.id"
-                :to="`/favorite/${favorite.id}`"
+                :to="`/art-directions/${favorite.id}`"
             >
                 <div class="favorite-item">
                     <div class="favorite-item-content">
